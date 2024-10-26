@@ -18,22 +18,22 @@ Adicionalmente, se le agregará un modulo para cargar la batería, con un contro
 
 ## Requisitos funcionales
 
-- **Procesamiento de datos:** con diferentes sensores se busca calcular diferentes medidas como se muestra:
-  - *Giroscopio y Acelerómetro:* cálculo de pasos mediante una conexión I2C.
-  - *Sensor de ritmo cardíaco:* se trabaja con una salida análoga, el muestreo depende de la frecuencia máxima de latidos por minuto, que son 220 latidos por minuto, que serían casi 4 latidos por segundo, por lo que se debe muestrear a un valor similar.
-  - *RTC:* con este módulo se plantea seguir la fecha y hora, este maneja una conexión serial, como se cambia cada segundo no se necesita una transmisión de datos de alta velocidad.
+- **Procesamiento de datos:** Con diferentes sensores se busca calcular diferentes medidas como se muestra:
+  - *Giroscopio y Acelerómetro:* Cálculo de pasos mediante una conexión I2C.
+  - *Sensor de ritmo cardíaco:* Se trabaja con una salida análoga, el muestreo depende de la frecuencia máxima de latidos por minuto, que son 220 latidos por minuto, que serían casi 4 latidos por segundo, por lo que se debe muestrear a un valor similar.
+  - *RTC:* Con este módulo se plantea seguir la fecha y hora, este maneja una conexión serial, como se cambia cada segundo no se necesita una transmisión de datos de alta velocidad.
 
-- **Alimentación:** se utilizará una batería que en caso de que se esté acabando se podrá recargar, se espera que se tenga una protección contra sobrecargas.
+- **Alimentación:** Se utilizará una batería que en caso de que se esté acabando se podrá recargar, se espera que se tenga una protección contra sobrecargas.
 
-- **Interfaz de Usuario:** se tendrán una pantalla LCD conectada mediante el protocolo SPI para mostrar los datos encontrados, siendo controlada por botones para elegir qué mostrar. Se debe poder configurar para empezar el uso del reloj normal.
+- **Interfaz de Usuario:** Se tendrá una pantalla LCD conectada mediante el protocolo SPI para mostrar los datos encontrados, siendo controlada por botones para elegir qué mostrar. Se debe poder configurar para empezar el uso del reloj normal.
 
 ## Requisitos NO funcionales
 
-- **Tiempo de respuesta:** se requiere que el tiempo de respuesta sea consecuente con la acción, esto es, que se permita el guardado y despliegue en un tiempo que no sea tan lejano al tiempo de reacción de un humano.
+- **Tiempo de respuesta:** Se requiere que el tiempo de respuesta sea consecuente con la acción, esto es, que se permita el guardado y despliegue en un tiempo que no sea tan lejano al tiempo de reacción de un humano.
   
-- **Usabilidad:** si bien se espera que el reloj sea intuitivo, se planea tener un manual de uso para su correcto funcionamiento y así conocer sus capacidades completas y evitar accidentes.
+- **Usabilidad:** Si bien se espera que el reloj sea intuitivo, se planea tener un manual de uso para su correcto funcionamiento y así conocer sus capacidades completas y evitar accidentes.
   
-- **Disponibilidad:** se espera que con la batería planeada se tenga por lo media hora de funcionamiento completo (En un modo completo de rendimiento).
+- **Disponibilidad:** Se espera que con la batería planeada se tenga por lo menos media hora de funcionamiento completo (En un modo completo de rendimiento).
 
 ## Escenario de Pruebas
 
@@ -58,4 +58,5 @@ Se anexa en la siguiente tabla un presupuesto tentativo incluyendo los component
 | Cargador USB tipo C para batería litio - 3.7v                          | 2.856           |
 | Conversor ADC - ADS1115                                                | 21.600          |
 | Baquela Universal 9x15cm                                               | 3.200           |
-| **Total**                                                              | 154.264         |
+| Botones pequeños x10                                                   | 4.176           |
+| **Total**                                                              | 158.440         |
