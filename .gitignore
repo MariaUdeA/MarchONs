@@ -8,7 +8,7 @@
 /**/synthesis_output
 /**/db
 /**/devkits
-/**/**/build
+/**/build
 /**/*.exe
 /**/prob.c
 /**/html
@@ -28,13 +28,12 @@
 /**/TextFiles
 /**/src/test.c
 
-/build/
-/CMakeFiles/
-/CMakeCache.txt
-/build.ninja
-/rules.ninja
-/.ninja_deps
-/.ninja_log
-/Proyecto final/build/
+Firmware//build/
+Firmware/CMakeFiles/
+Firmware/CMakeCache.txt
+Firmware/build.ninja
+Firmware/rules.ninja
+Firmware/.ninja_deps
+Firmware/.ninja_log
 .DS_Store
 /**/latex
