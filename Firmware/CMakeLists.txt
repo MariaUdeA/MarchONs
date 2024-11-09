@@ -35,7 +35,11 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Firmware Firmware.c )
+add_executable(Firmware 
+    src/Firmware.c
+    src/hardware/imu.c
+    src/drivers/i2c_driver.c
+)
 
 pico_set_program_name(Firmware "Firmware")
 pico_set_program_version(Firmware "0.1")
