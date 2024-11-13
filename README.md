@@ -7,14 +7,21 @@ En este repositorio se planea poner la información y códigos correspondientes 
 Un reloj inteligente que permita tomar diferentes bio estadísticas, enfocadas al deporte y a la actividad física, mediante el uso de sensores.
 
 <div align='center'>
-<img src="./Recursos_adicionales/Diag_bloques.jpg" alt="Diagrama de Bloques" width="350"/>
+<img src="./Recursos_adicionales/Diag_bloques.png" alt="Diagrama de Bloques" width="700"/>
 </div>
 
-Se usará el micro-controlador RP2040 para procesar señales que provienen de sensores como un acelerómetro y giroscopio para medir los pasos por día, un sensor de ritmo cardíaco para dar el pulso, y la señal del RTC (*"Real"* time clock) externo para mostrar la hora en un momento dado.
+Se usará el micro-controlador RP2040 para procesar todas las señales. El sensor de acelerómetro y giroscopio se utiliza para medir los pasos por día viene conectado a un level shifter debido a que su voltaje típico de alimentación es de 1.8V y el RP2040 maneja una lógica de 3.3V. El sensor de ritmo cardíaco se usa para dar el pulso, conectado al ADC. La señal del RTC (*"Real"* time clock) externo para mostrar la hora en un momento dado es conectada mediante I2C.
 
-Estos datos se mostrarán en una pantalla LCD circular, controlada por pulsadores para presentar el dato pedido.
+Estos datos se mostrarán en una pantalla LCD circular que posee un controlador conectado por SPI, y sus funcionalidades son controladas por pulsadores para presentar el dato pedido.
 
-Adicionalmente, se le agregará un modulo para cargar la batería, con un control para evitar la sobrecarga mediante la lectura del valor análogo de la batería.
+Adicionalmente, se le agregará un modulo para cargar la batería, con un control para evitar la sobrecarga, además de tener la lectura del valor análogo de la batería mediante un divisor de voltaje conectado a un ADC.
+
+Para la estructura principal del proyecto se basa en el flujo de programa de polling e interrupciones. Como no se tiene lo específico del funcionamiento de todos los módulos, este diagrama es tentativo.
+<div align='center'>
+<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de Bloques" width="350"/>
+</div>
+En general, cuando se tiene alguna bandera, se mira qué la causa, ya sea un reinicio de la hora y usuario, cambio de pantalla, si se lee la variable que corresponde a la pantalla o si se cambia el número de pasos (debido a que se cuentan por día), no se necesita estar en la pantalla específica para que se haga el cambio.
+
 
 ## Requisitos funcionales
 
@@ -33,17 +40,25 @@ Adicionalmente, se le agregará un modulo para cargar la batería, con un contro
   
 - **Usabilidad:** Si bien se espera que el reloj sea intuitivo, se planea tener un manual de uso para su correcto funcionamiento y así conocer sus capacidades completas y evitar accidentes.
   
-- **Disponibilidad:** Se espera que con la batería planeada se tenga por lo menos media hora de funcionamiento completo (En un modo completo de rendimiento).
+- **Autonomía de la batería:** Se espera que con la batería planeada se tenga por lo menos media hora de funcionamiento completo (En un modo completo de rendimiento).
 
 ## Escenario de Pruebas
 
 En el momento de presentar este proyecto, se plantean las siguientes pruebas para mostrar su correcto funcionamiento:
 
 - Se empieza configurando el reloj (Dando datos del usuario y fecha actual).
-- Se muestra el correcto funcionamiento del medidor de pasos, el sensor de ritmo cardíaco y la fecha y hora configuradas a través del display de LCD circular.
+- Se muestra el correcto funcionamiento de:
+  - El medidor de pasos caminando o corriendo y mirando si se da el conteo correcto de los pasos (esperando estar en el 20% del valor correcto).
+  - El sensor de ritmo cardíaco empezando por el valor inicial, que sería el estado "normal" (de notar que puede ser un poco elevado por los nervios de la sustentación) y hacer una actividad física demandante como saltar o correr y mirar este valor.
+  - La fecha y hora configuradas a través del display de LCD circular, comparando con otro dispositivo que tenga la hora.
 - Se apaga para ver si sigue el conteo de la fecha y hora de manera normal y si se guardan los pasos.
 - Se muestra el correcto funcionamiento de la carga de la batería, llegando hasta el límite, después, se deja encendido hasta que pasen 30 minutos.
+## Cronograma
+Se espera terminar el proyecto en cuatro semanas siguiendo el cronograma:
 
+<div align='center'>
+<img src="./Recursos_adicionales/Cronograma.png" alt="Diagrama de Bloques" width="750"/>
+</div>
 
 ## Presupuesto
 
