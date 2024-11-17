@@ -37,9 +37,11 @@
 #define QMI8658A_RESET_SUCCES 0x80
 
 /*! @brief Mascara para escribir en el registro CTRL1 y habilitar las interupciones en modo push pull*/
-#define CTRL1_INT_EN (0x03 << 3)
+#define CTRL1_INT_EN (0x18)
 /*! @brief Mascara para desabilitar las configuraciones del registro CTRL7*/
 #define CTRL7_DISABLE_ALL 0x0
+/*! @brief Mascara para desabilitar las configuraciones del registro CTRL7 y habilitar el modo Non Sync Sample*/
+#define CTRL7_ENABLE_NON_SYNCSAMPLE 0x03
 /*! @brief Mascara para mapear la interrupcion al pin INT1*/
 #define CTRL8_INT1 (0x01 << 6)
 /*! @brief Mascara para habilitar los eventos en el registro CTRL8*/
@@ -47,45 +49,41 @@
 
 
 /**
- * @addtogroup QMI8658A_TAP_PARAMS
+ * @addtogroup QMI8658A_PEDOMETER_PARAMS
  * 
  * @{
  * 
- * Parámetros para la configuración del tap del sensor IMU.
+ * Parámetros para la configuración del pedometer del sensor IMU.
  */
 
-// Priority: Define la prioridad de los ejes (X > Y > Z)
-#define PRIORITY            0x00 // (X > Y > Z) según tabla del manual
-
-// PeakWindow: Duración máxima para un pico válido (40 ms @ 500 Hz)
-#define PEAK_WINDOW         20   // 40 ms / 2 ms por muestra
-
-// TapWindow: Tiempo mínimo antes de un segundo toque (100 ms @ 500 Hz)
-#define TAP_WINDOW_L        (100 / 2) & 0xFF       // Parte baja (50 muestras)
-#define TAP_WINDOW_H        ((100 / 2) >> 8) & 0xFF // Parte alta
-
-// DTapWindow: Tiempo máximo para un segundo toque (300 ms @ 500 Hz)
-#define DTAP_WINDOW_L       (300 / 2) & 0xFF       // Parte baja (150 muestras)
-#define DTAP_WINDOW_H       ((300 / 2) >> 8) & 0xFF // Parte alta
-
-// Alpha: Relación para promedio de aceleración (0.0625)
-#define ALPHA               ((uint8_t)(0.0625 / 0.0078)) // ≈ 8
-
-// Gamma: Relación para promedio de magnitud (0.25)
-#define GAMMA               ((uint8_t)(0.25 / 0.0078))   // ≈ 32
-
-// PeakMagThr: Umbral para detección de pico (0.8 g²)
-#define PEAK_MAG_THR_L      ((uint16_t)(0.8 / 0.01) & 0xFF)       // Parte baja
-#define PEAK_MAG_THR_H      (((uint16_t)(0.8 / 0.01) >> 8) & 0xFF) // Parte alta
-
-// UDMThr: Umbral para estado de reposo (0.4 g²)
-#define UDM_THR_L           ((uint16_t)(0.4 / 0.001) & 0xFF)       // Parte baja
-#define UDM_THR_H           (((uint16_t)(0.4 / 0.001) >> 8) & 0xFF) // Parte alta
-
-// Comandos
-#define TAP_FIRST_COMMAND   0x01
-#define TAP_SECOND_COMMAND  0x02
-#define CTRL_CMD_CONFIGURE_TAP  0x0C
+/*! @brief Indicates the count of sample batch/window for calculation*/
+#define PED_SAMPLE_CNT_L 0x32
+/*! @brief Indicates the count of sample batch/window for calculation*/
+#define PED_SAMPLE_CNT_H 0x00
+/*! @brief Indicates the threshold of the valid peak-to-peak detection*/
+#define PED_FIX_PEAK2PEAK_L 0x60
+/*! @brief Indicates the threshold of the valid peak-to-peak detection*/
+#define PED_FIX_PEAK2PEAK_H 0x00 
+/*! @brief Indicates the threshold of the peak detection comparing to average*/
+#define PED_FIX_PEAK_L      0x30
+/*! @brief Indicates the threshold of the peak detection comparing to average*/
+#define PED_FIX_PEAK_H      0x00
+/*! @brief Indicates the maximum duration (timeout window) for a step. Reset counting calculation if no peaks detected within this duration.*/
+#define PED_TIME_UP_L       0xC8
+/*! @brief Indicates the maximum duration (timeout window) for a step. Reset counting calculation if no peaks detected within this duration.*/
+#define PED_TIME_UP_H       0x00
+/*! @brief Indicates the minimum duration for a step. The peaks detected within this duration (quiet time) is ignored.*/
+#define PED_TIME_LOW        0x14
+/*! @brief Indicates the minimum continuous steps to start the valid step counting. If the continuously detected steps is lower
+than this count and timeout, the steps will not be take into account; if yes, the detected steps will all be taken
+into account and counting is started to count every following step before timeout. This is useful to screen out the fake steps detected by non-step vibrations*/
+#define PED_CNT_ENTRY  0x0A
+/*! @brief 0 is recommended*/
+#define PED_FIX_PRECISION   0x00
+/*! @brief The amount of steps when to update the pedometer output registers*/
+#define PED_SIG_COUNT       0x01
+/*! @brief Mascara para habilitar el pedometer*/
+#define PEDOMETER_EN 0x10
 
 
 /**

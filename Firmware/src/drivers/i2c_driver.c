@@ -80,8 +80,8 @@ void imu_pin_setup(void)
 
 
     // configurar la interrupción
-    gpio_set_irq_enabled_with_callback(DOF_INT1, GPIO_IRQ_LEVEL_HIGH, true, &gpio_callback);
-    //gpio_set_irq_enabled_with_callback(DOF_INT2, GPIO_IRQ_LEVEL_HIGH, true, &gpio_callback);
+    // gpio_set_irq_enabled_with_callback(DOF_INT1, GPIO_IRQ_LEVEL_LOW, true, &gpio_callback);
+    // gpio_set_irq_enabled_with_callback(DOF_INT2, GPIO_IRQ_LEVEL_HIGH, true, &gpio_callback);
 }
 
 void gpio_callback(uint gpio, uint32_t events)
