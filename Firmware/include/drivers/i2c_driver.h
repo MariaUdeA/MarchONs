@@ -20,60 +20,167 @@
  */
 
 #ifndef i2c_driver_H
-    #define i2c_driver_H
+#define i2c_driver_H
 
-    #include "pico/stdlib.h"
-    #include "hardware/i2c.h"
+#include "stdio.h"
+#include "pico/stdlib.h"
+#include "hardware/i2c.h"
+#include "hardware/dma.h"
+#include "hardware/gpio.h"
 
-    #define IMU_ADDR 0x6B       /**< Dirección del sensor IMU (Ver el datashee del QMI8658A pg. 9)*/
+/*! @brief Puerto I2C--> i2c1*/
+#define I2C_PORT (i2c1)
+
+/*! @brief Frecuencia del puerto I2C*/
+#define I2C_FREQ 400000
+
+/*! @brief Pin SDA1 */
+#define I2C_SDA 6
+/*! @brief Pin SCL1 */
+#define I2C_SCL 7
+
+/*! @brief Pin de INT1 de la imu*/
+#define DOF_INT1 23
+/*! @brief Pin de INT2 de la imu*/
+#define DOF_INT2 24
+
+// espacio para las instrucciones de preprocesador del rtc
 
 
-    /**
-     * @addtogroup I2C_CONFIG
-     * 
-     * @{
-     * 
-     * Configuración del driver I2C.
-     */
-    #define I2C_PORT i2c1       /**< Puerto I2C a usar. */
-    #define I2C_SDA 6           /**< Pin SDA del puerto I2C. */
-    #define I2C_SCL 7           /**< Pin SCL del puerto I2C. */
-    #define I2C_FREQ 400000     /**< Frecuencia del puerto I2C. */
-    /**
-     * @}
-     * 
-    */
+/**
+ * @addtogroup I2C_FUNCS
+ * @{
+ * 
+ * Funciones para configurar el driver I2C.
+ * 
+*/
 
-    /**
-     * @brief Función que inicializa el driver I2C.
-     * 
-     * Esta función inicializa el driver I2C, configurando los registros necesarios para su correcto funcionamiento.
-     * 
-     * @return void
-     */
-    void i2c_init_setup(void);
+/**
+ * @brief Inicializa el puerto I2C.
+ * 
+ * Función que inicializa el puerto I2C, los pines SDA y SCL,
+ * los pines de interrupción de la IMU y el callback de la interrupción.
+ * 
+ * si es necesario desde aqui iniciar el rtc
+ * 
+*/
+void smartwatch_i2c_init (void);
 
-    /**
-     * @brief Función que escribe un registro en el sensor IMU.
-     * 
-     * Esta función escribe un registro del sensor IMU.
-     * 
-     * @param reg Registro a leer.
-     * @param data Dato a escribir en el registro.
-     * 
-     */
-    void write_register_imu(uint8_t reg, uint8_t data);
 
-    /**
-     * @brief Función que lee un registro del sensor IMU.
-     * 
-     * Esta función lee un registro del sensor IMU.
-     * 
-     * @param reg Registro a leer.
-     * 
-     * @return uint8_t Dato leído del registro.
-     */
-    uint8_t read_register_imu(uint8_t reg);
+/**
+ * @brief Escribe un byte en un registro de un dispositivo I2C.
+ * 
+ * Función que escribe un byte en un registro de un dispositivo I2C.
+ * 
+ * @param i2c_port Puerto I2C.
+ * @param addr Dirección del dispositivo.
+ * @param reg Registro del dispositivo.
+ * @param value Valor a escribir.
+ * 
+*/
+void i2c_write_byte (i2c_inst_t *i2c_port, uint8_t addr, uint8_t reg, uint8_t value);
+
+
+/**
+ * @brief Escribe varios bytes en un registro de un dispositivo I2C.
+ * 
+ * Función que escribe varios bytes en un registro de un dispositivo I2C.
+ * 
+ * @param i2c_port Puerto I2C.
+ * @param addr Dirección del dispositivo.
+ * @param reg Registro del dispositivo.
+ * @param pData puntero de los Datos a escribir.
+ * @param len Cantidad de bytes a escribir.
+ * 
+*/
+void i2c_write_nbytes (i2c_inst_t *i2c_port, uint8_t addr, uint8_t *pData, uint32_t len);
+
+/**
+ * @brief Lee un byte de un registro de un dispositivo I2C.
+ * 
+ * Función que lee un byte de un registro de un dispositivo I2C.
+ * 
+ * @param i2c_port Puerto I2C.
+ * @param addr Dirección del dispositivo.
+ * @param reg Registro del dispositivo.
+ * 
+ * @return Valor leído.
+ * 
+*/
+uint8_t i2c_read_byte (i2c_inst_t *i2c_port, uint8_t addr, uint8_t reg);
+
+/**
+ * @brief Lee varios bytes de un registro de un dispositivo I2C.
+ * 
+ * Función que lee varios bytes de un registro de un dispositivo I2C.
+ * 
+ * @param i2c_port Puerto I2C.
+ * @param addr Dirección del dispositivo.
+ * @param reg Registro del dispositivo.
+ * @param pData puntero de la variable donde se guarda los valores leidos.
+ * @param len Cantidad de bytes a leer.
+ * 
+*/
+void i2c_read_nbytes (i2c_inst_t *i2c_port, uint8_t addr, uint8_t reg, uint8_t *pData, uint32_t len);
+
+/**
+ * @}
+ * 
+*/
+
+
+/**
+ * @addtogroup QMI8658A_FUNCS
+ * @{
+ * 
+ * Funciones para configurar el sensor IMU.
+ *
+*/
+
+
+/**
+ * @brief Configura el sensor IMU.
+ * 
+ * Función que configura el sensor IMU.
+ * 
+ * @param ctrl7 Configuración del sensor.
+ * 
+*/
+void imu_pin_setup (void);
+
+/**
+ * @brief Callback de la interrupción del sensor IMU.
+ * 
+ * Función que se llama cuando se detecta una interrupción en el sensor IMU.
+ * 
+ * @param gpio Pin de interrupción.
+ * @param events Eventos de interrupción.
+ * 
+ * @return none
+ * 
+*/
+void gpio_callback (uint gpio, uint32_t events);
+
+/**
+ * @}
+ * 
+*/
+
+
+/**
+ * @addtogroup DS1302_FUNCS
+ * @{
+ * 
+ * Funciones para configurar el RTC DS1302.
+ */
+
+// espacio para las funciones de configuración del RTC
+
+/**
+ * @}
+ * 
+*/
+
 
 
 
