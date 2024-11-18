@@ -20,6 +20,9 @@ int main()
     QMI8658_init();
 
     while (true) {
+
+
+        
         uint8_t steps = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STEP_CNT_LOW);
         printf("Steps: %d\n", steps);
 
@@ -28,7 +31,7 @@ int main()
 
         steps = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STEP_CNT_HIGH);
         printf("Steps: %d\n", steps);
-        
+
 
         sleep_ms(1000);
     }

@@ -40,12 +40,16 @@
 #define CTRL1_INT_EN (0x18)
 /*! @brief Mascara para desabilitar las configuraciones del registro CTRL7*/
 #define CTRL7_DISABLE_ALL 0x0
+/*! @brief Mascara para habilitar el accelerometro en aEN*/
+#define CTRL7_ENABLE_ACC 0x01
 /*! @brief Mascara para desabilitar las configuraciones del registro CTRL7 y habilitar el modo Non Sync Sample*/
 #define CTRL7_ENABLE_NON_SYNCSAMPLE 0x03
 /*! @brief Mascara para mapear la interrupcion al pin INT1*/
 #define CTRL8_INT1 (0x01 << 6)
 /*! @brief Mascara para habilitar los eventos en el registro CTRL8*/
 #define CTRL8_ENABLE_EVENTS 0x19
+/*! @brief Mascara para verificar que se escribio el comando en el registro CTRL9*/
+#define STATUSINT_CMD_DONE 0x80
 
 
 /**
@@ -56,34 +60,34 @@
  * Parámetros para la configuración del pedometer del sensor IMU.
  */
 
-/*! @brief Indicates the count of sample batch/window for calculation*/
+/*! @brief Indica la cantidad de muestras por lote/ventana para el cálculo */
 #define PED_SAMPLE_CNT_L 0x32
-/*! @brief Indicates the count of sample batch/window for calculation*/
+/*! @brief Indica la cantidad de muestras por lote/ventana para el cálculo */
 #define PED_SAMPLE_CNT_H 0x00
-/*! @brief Indicates the threshold of the valid peak-to-peak detection*/
-#define PED_FIX_PEAK2PEAK_L 0x60
-/*! @brief Indicates the threshold of the valid peak-to-peak detection*/
-#define PED_FIX_PEAK2PEAK_H 0x00 
-/*! @brief Indicates the threshold of the peak detection comparing to average*/
-#define PED_FIX_PEAK_L      0x30
-/*! @brief Indicates the threshold of the peak detection comparing to average*/
+/*! @brief Indica el umbral para la detección válida de pico a pico */
+#define PED_FIX_PEAK2PEAK_L 0xCC
+/*! @brief Indica el umbral para la detección válida de pico a pico */
+#define PED_FIX_PEAK2PEAK_H 0x00
+/*! @brief Indica el umbral para la detección de picos en comparación con el promedio */
+#define PED_FIX_PEAK_L      0x66
+/*! @brief Indica el umbral para la detección de picos en comparación con el promedio */
 #define PED_FIX_PEAK_H      0x00
-/*! @brief Indicates the maximum duration (timeout window) for a step. Reset counting calculation if no peaks detected within this duration.*/
+/*! @brief Indica la duración máxima (ventana de tiempo límite) para un paso. Restablece el cálculo si no se detectan picos dentro de esta duración. */
 #define PED_TIME_UP_L       0xC8
-/*! @brief Indicates the maximum duration (timeout window) for a step. Reset counting calculation if no peaks detected within this duration.*/
+/*! @brief Indica la duración máxima (ventana de tiempo límite) para un paso. Restablece el cálculo si no se detectan picos dentro de esta duración. */
 #define PED_TIME_UP_H       0x00
-/*! @brief Indicates the minimum duration for a step. The peaks detected within this duration (quiet time) is ignored.*/
+/*! @brief Indica la duración mínima para un paso. Los picos detectados dentro de esta duración (tiempo de quietud) se ignoran. */
 #define PED_TIME_LOW        0x14
-/*! @brief Indicates the minimum continuous steps to start the valid step counting. If the continuously detected steps is lower
-than this count and timeout, the steps will not be take into account; if yes, the detected steps will all be taken
-into account and counting is started to count every following step before timeout. This is useful to screen out the fake steps detected by non-step vibrations*/
-#define PED_CNT_ENTRY  0x0A
-/*! @brief 0 is recommended*/
+/*! @brief Indica la cantidad mínima de pasos continuos para comenzar el conteo de pasos válidos. Si los pasos detectados de manera continua son inferiores
+a esta cantidad y se alcanza el tiempo límite, los pasos no serán tenidos en cuenta; de lo contrario, todos los pasos detectados serán contabilizados, y se comenzará a contar cada paso siguiente antes de que se alcance el tiempo límite. Esto es útil para filtrar los pasos falsos detectados por vibraciones no relacionadas con pasos. */
+#define PED_CNT_ENTRY  0x010
+/*! @brief Se recomienda un valor de 0 */
 #define PED_FIX_PRECISION   0x00
-/*! @brief The amount of steps when to update the pedometer output registers*/
+/*! @brief La cantidad de pasos después de la cual se actualizan los registros de salida del podómetro */
 #define PED_SIG_COUNT       0x01
-/*! @brief Mascara para habilitar el pedometer*/
+/*! @brief Máscara para habilitar el podómetro */
 #define PEDOMETER_EN 0x10
+
 
 
 /**
@@ -243,6 +247,8 @@ enum IMU_REGISTERS
  */
 enum QMI8658A_CTRL9_COMMANDS
 {
+    /*! \brief Acknowledge command*/
+    CTRL_CMD_ACK = 0x00,
     /*! \brief Set up the and enable Wake on Motion WoM*/
     CTRL_CMD_WRITE_WOM_SETTING = 0x08,
     /*! \brief Configure Tap detection*/
@@ -322,11 +328,11 @@ enum QMI8658_aFS
     /*! @brief 2g*/
     aFS_2g = 0x00,
     /*! @brief 4g*/
-    aFS_4g = 0x01,
+    aFS_4g = 0x10,
     /*! @brief 8g*/
-    aFS_8g = 0x02,
+    aFS_8g = 0x20,
     /*! @brief 16g*/
-    aFS_16g = 0x03,
+    aFS_16g = 0x30,
 };
 
 /**
@@ -338,7 +344,7 @@ enum QMI8568_aST
     /*! @brief Dissable self test mode*/
     DIS_self_test = 0x00,
     /*! @brief Enable self test mode*/
-    EN_self_test = 0x01,
+    EN_self_test = 0x80,
 };
 
 /**
@@ -431,6 +437,13 @@ void tap_config(void);
 void tap_read(void);
 void Non_SyncSample_mode(void);
 void QMI8658_enable_interrupt(void);
+
+
+
+/**
+ * @brief Función para inicializar el sensor IMU.
+ *
+ */
 void QMI8658_init(void);
 /**
  * @}

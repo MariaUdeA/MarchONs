@@ -48,7 +48,7 @@ uint8_t i2c_read_byte(i2c_inst_t *i2c_port, uint8_t addr, uint8_t reg)
     // Read the register
     i2c_read_blocking(i2c_port, addr, &buf, 1, false);
 
-    printf("Read byte: 0x%02X on register 0x%02X\n", buf, reg);
+    // printf("Read byte: 0x%02X on register 0x%02X\n", buf, reg);
     return buf;
 }
 
