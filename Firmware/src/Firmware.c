@@ -6,11 +6,8 @@
 #include "hardware/i2c.h"
 #include "hardware/gpio.h"
 
-
 #include "../include/hardware/imu.h"
 #include "../include/drivers/i2c_driver.h"
-
-
 
 int main()
 {
@@ -18,21 +15,14 @@ int main()
     sleep_ms(5000);
 
     QMI8658_init();
+    uint32_t steps =0;
 
-    while (true) {
+    while (true)
+    {
+        // leer los pasos
+        steps = read_imu_step_count();
 
-
-        
-        uint8_t steps = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STEP_CNT_LOW);
-        printf("Steps: %d\n", steps);
-
-        steps = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STEP_CNT_MIDL);
-        printf("Steps: %d\n", steps);
-
-        steps = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STEP_CNT_HIGH);
-        printf("Steps: %d\n", steps);
-
-
+        printf("pasos: %d\n", steps);
         sleep_ms(1000);
     }
 }

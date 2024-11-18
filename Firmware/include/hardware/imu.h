@@ -433,15 +433,63 @@ enum QMI8568_gST
 * Funciones para configurar el sensor IMU, habilitar interrupciones y leer datos.
 *
 */
-void tap_config(void);
-void tap_read(void);
-void Non_SyncSample_mode(void);
-void QMI8658_enable_interrupt(void);
+
+
+/**
+ * @brief Función para lee los pasos detectados por la imu.
+ * 
+ * Esta función lee los pasos detectados por el podómetro de la imu
+ * leyendo en los registros  STEP_CNT_LOW , STEP_CNT_MIDL, STEP_CNT_HIGH
+ * 
+ * @return La cantidad de pasos detectados por el podómetro.
+ */
+uint32_t read_imu_step_count(void);
+
+/**
+ * @brief Función para habilitar el podómetro del sensor IMU.
+ *
+ * Esta función habilita ajusta el ODR a 50Hz, habilita el acelerometro y finalmente el pedometer.
+ *
+ */
+void enable_pedometer(void);
+
+/**
+ * @brief Función para configurar los parametros del podómetro del sensor IMU.
+ *
+ * Esta función configura los parametros del podómetro del sensor IMU, como la cantidad de muestras por lote/ventana para el cálculo, el umbral para la detección válida de pico a pico, el umbral para la detección de picos en comparación con el promedio, la duración máxima para un paso, la duración mínima para un paso, la cantidad mínima de pasos continuos para comenzar el conteo de pasos válidos, la precisión de la fijación, la cantidad de pasos después de la cual se actualizan los registros de salida del podómetro y habilita el podómetro.
+ * 
+ * @see QMI8658A_PEDOMETER_PARAMS
+ * 
+ * @return 0 si la configuración fue exitosa, -1 en caso contrario.
+ */
+int imu_config_pedometer_params(void);
 
 
 
 /**
+ * @brief Función para configurar las interrupciones del sensor IMU.
+ *
+ * Esta funcion habilita las interrupciones en modo push pull y mapea la interrupción al pin INT1.
+ *
+ */
+void config_interrupts(void);
+
+
+/**
+ * @brief Funcion para resetear el sensor IMU.
+ * 
+ * Esta función resetea el sensor IMU, realiza un soft reset y verifica que el sensor se haya reseteado correctamente.
+ * 
+ * @return 0 si el sensor se reseteo correctamente, -1 en caso contrario.
+ *
+ */
+int reset_imu(void);
+
+
+/**
  * @brief Función para inicializar el sensor IMU.
+ * 
+ * Esta función inicializa el sensor IMU, reseteando el sensor, verificando la conexión y configurando el podómetro.
  *
  */
 void QMI8658_init(void);
