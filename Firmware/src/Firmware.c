@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "LCD_Test.h"   //Examples
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/i2c.h"
@@ -47,6 +48,7 @@ int main()
     // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
     while (true) {
+        LCD_1in28_test();
         printf("Hello, world!\n");
         sleep_ms(1000);
     }
