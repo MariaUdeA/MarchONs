@@ -3,7 +3,7 @@
 
 //Inicializar el spi
 void SPI_init(void){
-    //check datasheet to see which connection
+    //check datasheet to see which connection has the SPI
 }
 
 //wrapper write byte
