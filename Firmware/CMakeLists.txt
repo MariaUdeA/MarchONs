@@ -51,8 +51,8 @@ pico_sdk_init()
 
 add_executable(Firmware 
     src/Firmware.c
-    src/hardware/imu.c
-    src/drivers/i2c_driver.c
+    src/hardware/LCD.c
+    src/drivers/spi_driver.c
 )
 
 pico_set_program_name(Firmware "Firmware")
@@ -75,6 +75,10 @@ target_include_directories(Firmware PRIVATE
 target_link_libraries(Firmware 
         hardware_spi
         hardware_i2c
+        hardware_pwm
+        hardware_dma
+        hardware_pll
+        hardware_clocks
         )
 
 pico_add_extra_outputs(Firmware)

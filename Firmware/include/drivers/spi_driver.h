@@ -21,8 +21,12 @@
 
 #define spi_driver_H
 
+#include "stdio.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "hardware/gpio.h"
+#include "hardware/dma.h"
+#include "hardware/pwm.h"
 
 /**
  * @addtogroup SPI_CONFIG
@@ -37,20 +41,20 @@
 /*! @brief Frecuencia de la comunicacion spi*/
 #define SPI_FREQ (270000 * 1000)
 
-/*! @brief LDC command/data selection pin*/
-#define LDC_DC_PIN 8
-/*! @brief LDC chip selection*/
-#define LDC_CS_PIN 9
-/*! @brief LDC SCK pin*/
-#define LDC_SCK_PIN 10
-/*! @brief LDC MOSI pin*/
-#define LDC_MOSI_PIN 11
-/*! @brief LDC RESET PIN*/
-#define LDC_RESET_PIN 12
-/*! @brief LDC BLACKLIGHT CONTROL pin*/
-#define LDC_BL_PIN 25
+/*! @brief LCD command/data selection pin*/
+#define LCD_DC_PIN 8
+/*! @brief LCD chip selection*/
+#define LCD_CS_PIN 9
+/*! @brief LCD SCK pin*/
+#define LCD_SCK_PIN 10
+/*! @brief LCD MOSI pin*/
+#define LCD_MOSI_PIN 11
+/*! @brief LCD RESET PIN*/
+#define LCD_RESET_PIN 12
+/*! @brief LCD BLACKLIGHT CONTROL pin*/
+#define LCD_BL_PIN 25
 /*! @brief Marcara de los pines de control del display*/
-#define LDC_PIN_MASKS ((1U << LDC_DC_PIN) | (1U << LDC_CS_PIN) | (1U << LDC_RESET_PIN) | (1U << LDC_BL_PIN))
+#define LCD_PIN_MASKS ((1U << LCD_DC_PIN) | (1U << LCD_CS_PIN) | (1U << LCD_RESET_PIN) | (1U << LCD_BL_PIN))
 
 /**
  * @}
@@ -70,20 +74,6 @@
  * Esta función inicializa el driver SPI, configurando los registros necesarios para su correcto funcionamiento.
  */
 void SPI_init(void);
-
-
-/**
- * @brief Función que envía un comando al display.
- *
- * Esta función envía un comando al display.
- *
- * @param command Comando a enviar.
- *
- * @return void
- */
-void send_command(uint8_t command);
-
-
 
 
 /**
@@ -113,4 +103,32 @@ void SPI_Write_nByte(uint8_t pData[], uint32_t Len);
  * @}
  */
 
+
+/**
+ * @brief Función que configura el DMA para el driver SPI.
+ * 
+ * Esta función configura el DMA para el driver SPI.
+ * 
+ * @return void
+ */
+void config_dma(void);
+
+/**
+ * @brief Función que configura el PWM para el driver SPI.
+ * 
+ * Esta función configura el PWM para el driver SPI, esta configuracion 
+ * se utiliza para controlar el brillo de la pantalla.
+ */
+void config_pwm(void);
+
+/**
+ * @brief Función que configura los pines GPIO para el driver SPI.
+ * 
+ * Esta función configura los pines GPIO para el driver SPI.
+ */
+void config_gpio(void);
+
+
+
+void set_pwm(uint8_t level);
 #endif
