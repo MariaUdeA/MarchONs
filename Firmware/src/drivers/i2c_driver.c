@@ -1,3 +1,4 @@
+
 /**
  * @file i2c_driver.c
  * 
@@ -115,3 +116,4 @@ void smartwatch_i2c_init(void)
 
 
 } 
+
