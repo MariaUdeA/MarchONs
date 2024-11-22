@@ -53,6 +53,11 @@ add_executable(Firmware
     src/Firmware.c
     src/hardware/LCD.c
     src/drivers/spi_driver.c
+    src/hardware/imu.c
+    src/drivers/i2c_driver.c
+    src/drivers/spi_driver.c
+    src/step_counter.c
+
 )
 
 pico_set_program_name(Firmware "Firmware")
@@ -73,12 +78,15 @@ target_include_directories(Firmware PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(Firmware 
+        pico_stdlib
         hardware_spi
         hardware_i2c
         hardware_pwm
         hardware_dma
         hardware_pll
         hardware_clocks
+        hardware_sync
+        hardware_dma
         )
 
 pico_add_extra_outputs(Firmware)
