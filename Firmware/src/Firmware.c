@@ -15,6 +15,9 @@
 
 #define PLL_SYS_KHZ (270 * 1000)
 
+
+
+
 int main()
 {
     set_sys_clock_khz(PLL_SYS_KHZ, true);
@@ -27,8 +30,8 @@ int main()
 
     stdio_init_all();
     LCD_init(HORIZONTAL);
-    //LCD_Clear(WHITE);
-    LCD_Display((uint16_t *)imagen_1);
+    LCD_Clear(WHITE);
+    //LCD_Display((uint16_t *)imagen_1);
 
     set_pwm(100);
   
