@@ -38,7 +38,9 @@
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "files.associations": {
         "i2c_driver.h": "c",
+        "spi_driver.h": "c",
         "stdio.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
+
