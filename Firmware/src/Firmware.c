@@ -7,6 +7,7 @@
 #include "hardware/gpio.h"
 
 #include "../include/hardware/imu.h"
+#include "../include/hardware/ds1302.h"
 #include "../include/drivers/i2c_driver.h"
 
 int main()

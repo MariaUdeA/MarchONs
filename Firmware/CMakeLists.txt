@@ -38,6 +38,7 @@ pico_sdk_init()
 add_executable(Firmware 
     src/Firmware.c
     src/hardware/imu.c
+    src/hardware/ds1302.c
     src/drivers/i2c_driver.c
     src/drivers/spi_driver.c
     src/step_counter.c
@@ -50,10 +51,6 @@ pico_set_program_version(Firmware "0.1")
 pico_enable_stdio_uart(Firmware 0)
 pico_enable_stdio_usb(Firmware 1)
 
-# Add the standard library to the build
-target_link_libraries(Firmware
-        pico_stdlib)
-
 # Add the standard include files to the build
 target_include_directories(Firmware PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
@@ -65,9 +62,8 @@ target_link_libraries(Firmware
         hardware_spi
         hardware_i2c
         hardware_sync
-        hardware_dma
-        
+        hardware_dma  
+        hardware_rtc      
         )
-
+        
 pico_add_extra_outputs(Firmware)
-
