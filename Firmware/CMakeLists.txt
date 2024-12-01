@@ -38,7 +38,6 @@ add_executable(Firmware
     src/hardware/ds1302.c
     src/drivers/i2c_driver.c
     src/drivers/spi_driver.c
-    src/drivers/twire_driver.c
     src/step_counter.c
 
 )

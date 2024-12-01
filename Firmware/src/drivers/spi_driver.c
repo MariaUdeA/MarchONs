@@ -95,28 +95,10 @@ void SPI_init(void){
 
 }
 
-void SPI0_init(void){
-    //Configuración del otro canal de SPI
-    config_RTC_pins();
-    //No creo que se necesite esto, pero lo dejo redactado por si acaso.
-    spi_set_format(SPI_PORT0,8,SPI_CPOL_0,SPI_CPHA_0,SPI_MSB_FIRST);
-    spi_init(SPI_PORT0, SPI0_FREQ);
-    // Configura los pines de la interfaz SPI
-    gpio_set_function(RTC_SCK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(RTC_MOSI_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(RTC_MISO_PIN, GPIO_FUNC_SPI);
-
-}
-
 //wrapper write byte
 void SPI_WriteByte(uint8_t Value)
 {
     spi_write_blocking(SPI_PORT, &Value, 1);
-}
-
-void SPI0_WriteByte(uint8_t Value)
-{
-    spi_write_blocking(SPI_PORT0, &Value, 1);
 }
 
 //wrapper write string
@@ -125,23 +107,45 @@ void SPI_Write_nByte(uint8_t pData[], uint32_t Len)
     spi_write_blocking(SPI_PORT, pData, Len);
 }
 
-void SPI0_Write_nByte(uint8_t pData[], uint32_t Len)
-{
-    spi_write_blocking(SPI_PORT0, pData, Len);
-}
-
 void set_pwm(uint8_t level) {
     pwm_set_chan_level(slice_num, PWM_CHAN_B, level);
+}
+
+void SPI0_init(void){
+    //Configuración del otro canal de SPI
+    config_RTC_pins();
+    //No creo que se necesite esto, pero lo dejo redactado por si acaso.
+    spi_init(SPI_PORT0, SPI0_FREQ);
+    // Configura los pines de la interfaz SPI
+    gpio_set_function(RTC_SCK_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(RTC_MOSI_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(RTC_MISO_PIN, GPIO_FUNC_SPI);
+
+}
+
+void SPI0_WriteByte(uint8_t Value)
+{
+    uint8_t out=Value;
+    if(SPI0_LSB_FIRST) out=swap_8[out];
+    spi_write_blocking(SPI_PORT0, &out, 1);
 }
 
 uint8_t SPI0_ReadByte()
 {
     uint8_t dst;
     spi_read_blocking(SPI_PORT0,0,&dst, 1);
+    if(SPI0_LSB_FIRST){dst=swap_8[dst];}
     return dst;
 }
 
-void SPI0_Read_nByte(uint8_t* rData, uint32_t Len)
-{
-    spi_read_blocking(SPI_PORT0,0,rData,Len);
+void SPI0_beginTransmission(uint8_t command) {
+    gpio_put(RTC_CS_PIN,true);
+    sleep_us(4); // tCC = 4us NO SE QUE SIGNIFICA ESTO???????
+
+    SPI0_WriteByte(command);
+}
+
+void SPI0_endTransmission() {
+    gpio_put(RTC_CS_PIN,false);
+    sleep_us(4);  // tCWH = 4us
 }

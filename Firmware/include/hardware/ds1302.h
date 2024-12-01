@@ -5,7 +5,16 @@
  *
  * Este archivo contiene la definición de funciones para el manejo del módulo DS1302, desde
  * la inicialización hasta la lectura de datos.
- *
+ * 
+ * Mapeo de RAM 31X8:
+ * - 0 -> Decimales más significativos del año.
+ * 
+ * Pinout:
+ * - **RST -> CS**: GPIO17
+ * - **SCLK -> SCK**: GPIO18
+ * - **IO -> MISO**: GPIO16
+ * - Conectar MISO con MOSI (GPIO19) mediante una resistencia de 1k.
+ * 
  * @authors Maria Del Mar Arbelaez Sandoval
  *          Manuel Santiago Velasquez
  *          Julián Mauricio Sánchez Ceballos
@@ -26,14 +35,13 @@
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
 
-//#include "../../include/drivers/spi_driver.h"
-#include "../../include/drivers/twire_driver.h"
+#include "../../include/drivers/spi_driver.h"
 
 /**< Start RTC bool*/
 #define START_RTC 0
 /**< Stop RTC bool*/
 #define STOP_RTC 1
-
+#define READ_FLAG 1
 
 /**
  * @addtogroup rtc_regs RTC_REGISTERS
@@ -60,145 +68,15 @@ enum RTC_registers{
     WRITE_PROTECT_REG=0x8E,
     /*! \brief Trickle Charger Resistor and Diode Select register address*/
     RES_AND_DIODE_REG=0x90,
-    /*! \brief Trickle Charger Resistor and Diode Select register address*/
+    /*! \brief Burst mode address*/
     BURST_MODE_REG=0XBE,
-    /*! \brief Trickle Charger Resistor and Diode Select register address*/
+    /*! \brief RAM burst mode address*/
     BURST_MODE_RAM_REG=0XFE,
-    RAM_START_ADDR=0XC1,
+    /*! \brief RAM start address*/
+    RAM_START_ADDR=0XC0,
+    /*! \brief RAM end address*/
+    RAM_END_ADDR=0XFC,
 };
-
-
-/**
- * @}
- * @addtogroup Seg_reg Seconds Register
- * @{
- *
- * Campos de bit del registro de segundos
- */
-typedef union{
-    uint8_t WORD; /**< Whole Register */
-    struct BITS_SEC{
-        uint8_t seconds     : 4; /**< Segundos */
-        uint8_t ten_seconds : 3; /**< 10 Segundos */
-        uint8_t ch          : 1; /**< Clock Halt */
-    } BITS; /**< Bitfield Structure */
-} _seconds_reg_t; 
-
-/**
- * @}
- * @addtogroup min_reg Minutes Register
- * @{
- *
- * Campos de bit del registro de minutos
- */
-typedef union{
-    uint8_t WORD; /**< Whole Register */
-    struct BITS_MIN{
-        uint8_t minutes     : 4;   /**< Minutes */
-        uint8_t ten_minutes : 3;   /**< 10 Minutes */
-        uint8_t             : 1;   /**< Reserved */
-    } BITS;  /**< Bitfield Structure */
-} _minutes_reg_t;
-
-
-/**
- * @}
- * @addtogroup hour_reg Hours Register
- * @{
- *
- * Campos de bit del registro de horas
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_HOUR{
-        uint8_t hours      : 4; /**< Hours */
-        uint8_t ten_hours  : 2; /**< Ten hours or AM/PM */
-        uint8_t            : 1;
-        uint8_t am_pm      : 1; /**< 12 or 24 selector */
-    } BITS; /**< Bitfield Structure */
-} _hours_reg_t;
-
-
-/**
- * @}
- * @addtogroup date_reg Date Register
- * @{
- *
- * Campos de bit del registro de fecha del mes
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_DATE{
-        uint8_t date     : 4; /**< Date 1-31 */
-        uint8_t ten_date : 2; /**< Ten days */
-        uint8_t          : 2; /**< Reserved */
-    } BITS; /**< Bitfield Structure */
-} _date_reg_t;
-
-
-/**
- * @}
- * @addtogroup month_reg Month Register
- * @{
- *
- * Campos de bit del registro del mes
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_MONTH{
-        uint8_t months     : 4; /**< Months */
-        uint8_t ten_months : 1; /**< Ten Months */
-        uint8_t            : 3; /**< Reserved */
-    } BITS; /**< Bitfield Structure */
-} _month_reg_t;
-
-
-/**
- * @}
- * @addtogroup day_reg Day of the week Register
- * @{
- *
- * Campos de bit del registro del dia de la semana
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_DAY{
-        uint8_t day     : 3; /**< Day 1-7 */
-        uint8_t         : 5; /**< Reserved */
-    } BITS; /**< Bitfield Structure */
-} _day_reg_t;
-
-
-/**
- * @}
- * @addtogroup yearr_reg Year Register
- * @{
- *
- * Campos de bit del registro de los años
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_YR{
-        uint8_t years     : 4; /**< years 0-99 */
-        uint8_t ten_years : 4; /**< 10 years 0-99 */
-    } BITS; /**< Bitfield Structure */
-} _year_reg_t;
-
-/**
- * @}
- * @addtogroup wp_reg Write Protect Register
- * @{
- *
- * Campos de bit del registro de write protect
- */
-typedef union{
-    uint8_t word; /**< Whole Register */
-    struct BITS_WP{
-        uint8_t      : 7; /**< Reserved */
-        uint8_t wp   : 1; /**< Write Protect */
-    } BITS; /**< Bitfield Structure */
-} _wp_reg_t;
-#define clear_wp 0 /**< Write Protect Clear*/
 
 /**
  * @}
@@ -229,17 +107,53 @@ typedef union{
 * Funciones para configurar el módulo RTC, escribir y leer datos.
 *
 */
-uint8_t getReg(uint8_t regAddress);
-void setReg(uint8_t regAddress, uint8_t regValue);
 
+/**
+ * @brief Función para conseguir un registro del RTC.
+ * 
+ * Esta función lee un registro del modulo rtc.
+ * @param regAddress Dirección del registro a leer.
+ * 
+ * @return Byte leído.
+ */
+uint8_t getReg(uint8_t regAddress);
+
+/**
+ * @brief Función para escribir un registro del RTC.
+ * 
+ * Esta función escrible un registro del modulo rtc.
+ * @param regAddress Dirección del registro a escribir.
+ * @param regValue Valor a escribir.
+ * 
+ * @return none
+ */
+void setReg(uint8_t regAddress, uint8_t regValue);
 
 /**
  * @brief Función para inicializar el modulo RTC.
  * 
  * Esta función inicializa el modulo rtc.
- *
+ * @param backup_time Puntero a estructura de datetime en caso de que el valor del RTC sea incorrecto.
+ * 
  */
 void DS1302_init(datetime_t* backup_time);
+
+/**
+ * @brief Función para determinar si el RTC se puede escribir o no.
+ * 
+ * @return True, si no se puede escribir, false de lo contrario.
+ * 
+ */
+bool GetIsWriteProtected();
+
+/**
+ * @brief Función para permitir o no la escritura del RTC.
+ * 
+ * @param WriteProtect bool para hacer el write protect, true para bloquear la escritura del RTC, false de lo contrario.
+ * @return none
+ * 
+ */
+void SetIsWriteProtected(bool WriteProtect);
 
 /**
  * @brief Función para determinar si el RTC está detenido o no.
@@ -247,16 +161,23 @@ void DS1302_init(datetime_t* backup_time);
  * @return True, si está detenido, falso de lo contrario.
  * 
  */
-bool GetIsWriteProtected();
-void SetIsWriteProtected(bool isWriteProtected);
 bool GetIsRunning();
+
+/**
+ * @brief Función para empezar o detener el RTC.
+ * 
+ * @param run bool, true para empezar el RTC, false para detenerlo.
+ * @return none
+ * 
+ */
 void SetIsRunning(bool run);
 
 /**
  * @brief Función para escribir la fecha del modulo RTC.
  * 
- * Esta función escribe la fecha actual en el modulo rtc.
- *
+ * Esta función escribe la fecha ingresada en el modulo rtc.
+ * 
+ * @param dt puntero a estructura de tiempo.
  */
 void SetDateTime(datetime_t* dt);
 
@@ -264,16 +185,60 @@ void SetDateTime(datetime_t* dt);
  * @brief Función para conseguir la fecha del modulo RTC.
  * 
  * Esta función lee la fecha del modulo rtc.
- *
+ * 
+ * @param dt puntero a estructura de tiempo a escribir.
  */
 void GetDateTime(datetime_t* dt);
 
+/**
+ * @brief Función para escribir en la memoria del modulo RTC.
+ * 
+ * Esta función escribe en la memoria RAM del módulo RTC.
+ * 
+ * @param memoryAddress posición de la memoria de 0 a 30.
+ * @param value valor a escribir en la RAM.
+ * 
+ */
+void SetMemory(uint8_t memoryAddress, uint8_t value);
+
+/**
+ * @brief Función para leer una posición de la memoria del modulo RTC.
+ * 
+ * Esta función lee la memoria RAM del módulo RTC.
+ * 
+ * @param memoryAddress posición de la memoria de 0 a 30.
+ * @return valor leído de la RAM.
+ * 
+ */
+uint8_t GetMemory(uint8_t memoryAddress);
+
+/**
+ * @brief Función para verificar la fecha del modulo RTC.
+ * 
+ * Esta función lee la fecha del modulo RTC y la valida.
+ * 
+ * @return bool, true si la fecha el válida, false, de lo contrario.
+ */
 bool IsDateTimeValid();
 
+/**
+ * @brief Función para validar una estructura datetime.
+ * 
+ * @param dt puntero a estructura de tiempo a validar.
+ * 
+ * @return bool, true si la fecha el válida, false, de lo contrario.
+ */
 bool DateIsValid(datetime_t* dt);
 
+/**
+ * @brief Función para imprimir en serial una estructura datetime.
+ * 
+ * La estructura TIENE que ser válida, de lo contrario la RP2040 se bloquea.
+ * 
+ * @param dt puntero a estructura de tiempo a validar.
+ * 
+ */
 void print_datetime(datetime_t* dt);
-
 
 /**
  * @}
