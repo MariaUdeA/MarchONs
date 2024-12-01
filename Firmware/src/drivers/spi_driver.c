@@ -18,9 +18,6 @@
  */
 
 
-
-
-
 //Incluir header
 #include "../../include/drivers/spi_driver.h"
 dma_channel_config c;
@@ -45,7 +42,16 @@ void config_display_pins(void) {
     gpio_put(LCD_CS_PIN, 1);
     gpio_put(LCD_DC_PIN, 0);
     gpio_put(LCD_BL_PIN, 1);
+}
 
+void config_RTC_pins(void) {
+    // Configura los pines de control del RTC
+    gpio_init(RTC_CS_PIN);
+    gpio_set_dir(RTC_CS_PIN, GPIO_OUT);
+
+    // Configura el pin de selección del RTC
+    // Este CS es alto en 1
+    gpio_put(RTC_CS_PIN, 0);
 }
 
 void config_pwm(void) {
@@ -69,9 +75,6 @@ void config_dma(void) {
 
 }
 
-
-
-
 void SPI_init(void){
 
     // Configura los pines de la interfaz SPI
@@ -90,13 +93,11 @@ void SPI_init(void){
     // Configura el dma
     config_dma();
 
-
 }
 
 //wrapper write byte
 void SPI_WriteByte(uint8_t Value)
 {
-    
     spi_write_blocking(SPI_PORT, &Value, 1);
 }
 
@@ -108,4 +109,43 @@ void SPI_Write_nByte(uint8_t pData[], uint32_t Len)
 
 void set_pwm(uint8_t level) {
     pwm_set_chan_level(slice_num, PWM_CHAN_B, level);
+}
+
+void SPI0_init(void){
+    //Configuración del otro canal de SPI
+    config_RTC_pins();
+    //No creo que se necesite esto, pero lo dejo redactado por si acaso.
+    spi_init(SPI_PORT0, SPI0_FREQ);
+    // Configura los pines de la interfaz SPI
+    gpio_set_function(RTC_SCK_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(RTC_MOSI_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(RTC_MISO_PIN, GPIO_FUNC_SPI);
+
+}
+
+void SPI0_WriteByte(uint8_t Value)
+{
+    uint8_t out=Value;
+    if(SPI0_LSB_FIRST) out=swap_8[out];
+    spi_write_blocking(SPI_PORT0, &out, 1);
+}
+
+uint8_t SPI0_ReadByte()
+{
+    uint8_t dst;
+    spi_read_blocking(SPI_PORT0,0,&dst, 1);
+    if(SPI0_LSB_FIRST){dst=swap_8[dst];}
+    return dst;
+}
+
+void SPI0_beginTransmission(uint8_t command) {
+    gpio_put(RTC_CS_PIN,true);
+    sleep_us(4); // tCC = 4us NO SE QUE SIGNIFICA ESTO???????
+
+    SPI0_WriteByte(command);
+}
+
+void SPI0_endTransmission() {
+    gpio_put(RTC_CS_PIN,false);
+    sleep_us(4);  // tCWH = 4us
 }

@@ -167,24 +167,5 @@ void gpio_callback (uint gpio, uint32_t events);
  * 
 */
 
-
-/**
- * @addtogroup DS1302_FUNCS
- * @{
- * 
- * Funciones para configurar el RTC DS1302.
- */
-
-// espacio para las funciones de configuración del RTC
-
-/**
- * @}
- * 
-*/
-
-
-
-
-
 #endif
 
