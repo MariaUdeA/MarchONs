@@ -14,7 +14,7 @@
  *
  * @date 21/11/2024
  *
- * @version 1.0
+ * @version 0.1
  *
  */
 
@@ -24,11 +24,15 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
-#include "../../include/drivers/i2c_driver.h"
 
-#define rst_pin 3
+//#include "../../include/drivers/spi_driver.h"
+#include "../../include/drivers/twire_driver.h"
+
+/**< Start RTC bool*/
+#define START_RTC 0
+/**< Stop RTC bool*/
+#define STOP_RTC 1
 
 
 /**
@@ -60,6 +64,7 @@ enum RTC_registers{
     BURST_MODE_REG=0XBE,
     /*! \brief Trickle Charger Resistor and Diode Select register address*/
     BURST_MODE_RAM_REG=0XFE,
+    RAM_START_ADDR=0XC1,
 };
 
 
@@ -78,7 +83,6 @@ typedef union{
         uint8_t ch          : 1; /**< Clock Halt */
     } BITS; /**< Bitfield Structure */
 } _seconds_reg_t; 
-#define mSeconds_Clock_Halt 1  /**< Halt Clock !!! */
 
 /**
  * @}
@@ -225,6 +229,9 @@ typedef union{
 * Funciones para configurar el módulo RTC, escribir y leer datos.
 *
 */
+uint8_t getReg(uint8_t regAddress);
+void setReg(uint8_t regAddress, uint8_t regValue);
+
 
 /**
  * @brief Función para inicializar el modulo RTC.
@@ -232,27 +239,40 @@ typedef union{
  * Esta función inicializa el modulo rtc.
  *
  */
-void DS1302_init(void);
-void setup_ds1302(datetime_t * time);
-void read_hour();
+void DS1302_init(datetime_t* backup_time);
 
 /**
- * @brief Función para pasar de decimal a BCD.
+ * @brief Función para determinar si el RTC está detenido o no.
  * 
- * @param value Valor decimal.
- * @return valor en BCD.
+ * @return True, si está detenido, falso de lo contrario.
  * 
  */
-static inline uint8_t dec_to_bcd(uint8_t value);
+bool GetIsWriteProtected();
+void SetIsWriteProtected(bool isWriteProtected);
+bool GetIsRunning();
+void SetIsRunning(bool run);
 
 /**
- * @brief Función para pasar de BCD a decimal.
+ * @brief Función para escribir la fecha del modulo RTC.
  * 
- * @param value Valor en BCD.
- * @return valor en decimal.
- * 
+ * Esta función escribe la fecha actual en el modulo rtc.
+ *
  */
-static inline uint8_t bcd_to_dec(uint8_t value);
+void SetDateTime(datetime_t* dt);
+
+/**
+ * @brief Función para conseguir la fecha del modulo RTC.
+ * 
+ * Esta función lee la fecha del modulo rtc.
+ *
+ */
+void GetDateTime(datetime_t* dt);
+
+bool IsDateTimeValid();
+
+bool DateIsValid(datetime_t* dt);
+
+void print_datetime(datetime_t* dt);
 
 
 /**

@@ -1,28 +1,9 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.0.0)
-set(toolchainVersion 13_2_Rel1)
-set(picotoolVersion 2.0.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
-# Generated Cmake Pico project file
-
 cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Initialise pico_sdk from installed location
-# (note this can come from environment, CMake cache etc)
-
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -30,7 +11,7 @@ else()
     set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.0.0)
-set(toolchainVersion 13_2_Rel1)
+set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
@@ -57,6 +38,7 @@ add_executable(Firmware
     src/hardware/ds1302.c
     src/drivers/i2c_driver.c
     src/drivers/spi_driver.c
+    src/drivers/twire_driver.c
     src/step_counter.c
 
 )
@@ -84,7 +66,6 @@ target_link_libraries(Firmware
         hardware_clocks
         hardware_sync
         hardware_dma  
-        hardware_rtc      
         )
         
 pico_add_extra_outputs(Firmware)
