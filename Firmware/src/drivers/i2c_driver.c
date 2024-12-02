@@ -32,7 +32,6 @@ void i2c_write_byte (i2c_inst_t *i2c_port, uint8_t addr, uint8_t reg, uint8_t va
 {
     uint8_t data[2] = {reg, value};
     i2c_write_blocking(i2c_port, addr, data, 2, false);
-
 }
 
 void i2c_write_nbytes(i2c_inst_t *i2c_port, uint8_t addr, uint8_t *pData, uint32_t len)
@@ -79,7 +78,6 @@ void imu_pin_setup(void)
     gpio_init(DOF_INT2);
     gpio_set_dir(DOF_INT2, GPIO_IN);
 
-
     // configurar la interrupción
     // gpio_set_irq_enabled_with_callback(DOF_INT1, GPIO_IRQ_LEVEL_LOW, true, &gpio_callback);
     // gpio_set_irq_enabled_with_callback(DOF_INT2, GPIO_IRQ_LEVEL_HIGH, true, &gpio_callback);
@@ -109,11 +107,6 @@ void smartwatch_i2c_init(void)
 
     // Inicializar la IMU
     imu_pin_setup();
-
-
-    // Inicializar el RTC
-    //
-
 
 } 
 
