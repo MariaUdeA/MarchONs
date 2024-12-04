@@ -27,10 +27,14 @@ static lv_color_t buf0[DISP_HOR_RES * DISP_VER_RES/2];
 static lv_color_t buf1[DISP_HOR_RES * DISP_VER_RES/2];
 static lv_disp_drv_t disp_drv;
 
-static lv_indev_drv_t indev_en;
-static lv_group_t *group;
-static lv_obj_t *label_steps;
-static lv_obj_t *screen1;
+static lv_obj_t *screen_main;
+static lv_obj_t *label_time;
+static lv_obj_t *label_date;
+static lv_obj_t *label_battery;
+
+static lv_obj_t *bar_steps, *bar_calories, *bar_distance;
+
+
 
 static struct repeating_timer lvgl_timer;
 
@@ -97,17 +101,51 @@ static void dma_handler(void)
     }
 }
 
-static void create_screen1 (void) {
+static void create_main_screen (void) {
     
-    screen1 = lv_obj_create(NULL);
-    lv_obj_t *label = lv_label_create(screen1);
-    lv_label_set_text(label, "Hola Smartwatch");
-    lv_obj_center(label);
+    screen_main = lv_obj_create(NULL);
 
-    label_steps = lv_label_create(screen1);
-    lv_label_set_text(label_steps, "Steps: 0");
-    lv_obj_align(label_steps, LV_ALIGN_OUT_BOTTOM_MID, 100, 50);
+    // configuración del widget de hora
+    label_time = lv_label_create(screen_main);
+    lv_label_set_text(label_time, "15:45");
+    lv_obj_set_style_text_font(label_time, &lv_font_montserrat_48, 0);
+    lv_obj_align(label_time, LV_ALIGN_CENTER, 0, -40);
+
+    // configuración del widget de fecha (debajo de la hora)
+    label_date = lv_label_create(screen_main);
+    lv_label_set_text(label_date, "02.12 WED");
+    lv_obj_set_style_text_font(label_date, &lv_font_montserrat_18, 0);
+    lv_obj_align(label_date, LV_ALIGN_CENTER, 0, 0);
+
+
+    // indicador de bateria
+    label_battery = lv_label_create(screen_main);
+    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%");
+    lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
+
+
+    // barra progreso de los pasos 
+    bar_steps = lv_bar_create(screen_main);
+    lv_obj_set_size(bar_steps, 200, 20);
+    lv_bar_set_range(bar_steps, 0, 8000);
+    lv_bar_set_value(bar_steps, 5600, LV_ANIM_OFF);
+    lv_obj_align(bar_steps, LV_ALIGN_CENTER, 0, 40);
+
+    lv_obj_t *label_steps = lv_label_create(screen_main);
+    lv_label_set_text(label_steps, "5600/8000 steps");
+    lv_obj_align_to(label_steps, bar_steps, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+
+    // barra progreso de las calorias y distancia 
+    lv_obj_t *label_calories = lv_label_create(screen_main);
+    lv_label_set_text(label_calories, "418 Kcal");
+    lv_obj_align(label_calories, LV_ALIGN_TOP_LEFT, 20, -20);
+
+
+    lv_obj_t *label_distance = lv_bar_create(screen_main);
+    lv_label_set_text(label_distance, "3.5 Km");
+    lv_obj_align(label_distance, LV_ALIGN_TOP_RIGHT, -10, -10);
 }
+
 
 static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
    
@@ -150,10 +188,9 @@ int smartwatch_init(void)
     irq_set_enabled(DMA_IRQ_0, true);
 
     // Crear las pantallas
-    create_screen1();
+    create_main_screen();
 
-    // Inicializar la primera pantalla
-    lv_scr_load(screen1);
+    lv_scr_load(screen_main);
 
     uint32_t steps = 0;
 
@@ -161,14 +198,6 @@ int smartwatch_init(void)
     // Bucle principal para LVGL
     while (true)
     {
-        steps = read_imu_step_count();
-        char steps_str[32];
-        snprintf(steps_str, 64, "Steps: %d", steps);
-        printf("udapted text: %s\n", steps_str);
-
-        lv_label_set_text(label_steps, steps_str);
-        lv_obj_align(label_steps, LV_ALIGN_OUT_BOTTOM_MID, 100, 50);
-        lv_obj_invalidate(screen1);
 
         lv_task_handler(); 
         sleep_ms(5); // Ajustar al ciclo de tiempo necesario
