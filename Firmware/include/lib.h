@@ -20,20 +20,22 @@
 #ifndef LIB_H
 #define LIB_H
 
-
+// Librerias del SDK
 #include "hardware/gpio.h"
 #include "hardware/pll.h"
 #include "hardware/clocks.h"
 #include "hardware/sync.h"
 
+// Librerias de la pico
 #include "pico/stdlib.h"
 #include "pico/platform.h"
 
-
+// Librerias de la aplicacion
 #include "./hardware/LCD.h"
 #include "./hardware/imu.h"
 #include "./drivers/spi_driver.h"
 #include "./drivers/i2c_driver.h"
+#include "./hardware/ds1302.h"
 
 
 //Libreria LGVL para el manejo de la interfaz grafica
@@ -79,7 +81,7 @@ void gpio_callback(uint gpio, uint32_t events);
  * @return none
  * 
 */
-void smartwatch_init(void);
+int smartwatch_init(void);
 
 
 

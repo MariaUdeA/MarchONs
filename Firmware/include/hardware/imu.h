@@ -1,4 +1,3 @@
-
 /**
  * @file imu.h
  *
@@ -268,20 +267,18 @@ enum QMI8658A_CTRL9_COMMANDS
  */
 
 /**
- * @addtogroup QMI8658A_CTRL9_WoM
+ * @addtogroup QMI8658A_CTRL9_TAP
  * @{
  *
- * Configuración del WoM del sensor IMU.
+ * Configuración del tap del sensor IMU.
  */
 
 enum QMI8658_WakeOnMotion
 {
     /*! \brief high threshold - large motion needed to wake*/
     QMI8658WoMThreshold_high = 128,
-    /*! \brief Configura la interrupcion int1 como activa en alto*/
-    QMI8658WoMiNT1Config = 0x03<<6,
-    /*! \brief Configura el numero de muestras a ser ignoradas para evitar falsas detecciones*/
-    QMI8658WoMBlankingTime = 0x08,
+    /*! \brief Low threshold - small motion needed to wake*/
+    WOM_ENABLE = 0x01,
 };
 
 /**
@@ -438,7 +435,6 @@ enum QMI8568_gST
 */
 
 
-
 /**
  * @brief Función para lee los pasos detectados por la imu.
  * 
@@ -450,12 +446,12 @@ enum QMI8568_gST
 uint32_t read_imu_step_count(void);
 
 /**
- * @brief Función para habilitar los eventos de movimiento del sensor IMU.
- * 
- * Esta función habilita el acelerometro y el podómetro del sensor IMU.
+ * @brief Función para habilitar el podómetro del sensor IMU.
+ *
+ * Esta función habilita ajusta el ODR a 50Hz, habilita el acelerometro y finalmente el pedometer.
  *
  */
-void enable_motion_events(void);
+void enable_pedometer(void);
 
 /**
  * @brief Función para configurar los parametros del podómetro del sensor IMU.
@@ -468,13 +464,6 @@ void enable_motion_events(void);
  */
 int imu_config_pedometer_params(void);
 
-
-/**
- * @brief Función para configurar los parametros del WoM del sensor IMU.
- * 
- * Esta función configura los parametros del WoM del sensor IMU, como el umbral para la detección de movimiento, la configuración de la interrupción int1 y el tiempo de espera para evitar falsas detecciones.
- */
-int imu_config_WoM_params (void);
 
 
 /**

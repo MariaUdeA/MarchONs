@@ -25,21 +25,6 @@
 static uint8_t qmi8658_who_am_i;
 static uint8_t qmi8658_reset_status;
 
-static void disable_ctrl7(void)
-{
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL7, CTRL7_DISABLE_ALL);
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL8, CTRL7_DISABLE_ALL);
-}
-
-static void set_ODR()
-{
-    uint8_t reg_value = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL2);
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL2, ODR_GYRO_56|reg_value|aFS_2g);
-    reg_value = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL2);
-    printf("ODR: 0x%02X\n", reg_value);
-
-}
-
 
 uint32_t read_imu_step_count(void)
 {
@@ -82,6 +67,9 @@ void config_interrupts(void)
 
 int imu_config_pedometer_params (void)
 {
+    // desabilita el ctrl7
+    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL7, CTRL7_DISABLE_ALL);
+    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL8, CTRL7_DISABLE_ALL);
 
     // verifica que todo el registro este en 0
     if (i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL7) != 0x00)
@@ -134,35 +122,17 @@ int imu_config_pedometer_params (void)
     return 0;
 }
 
-int imu_config_WoM_params (void) {
-    // configurar el WoM
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CAL1_L, QMI8658WoMThreshold_high);
-    sleep_ms(10);
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CAL1_H, QMI8658WoMiNT1Config);
-    sleep_ms(10);
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CAL1_H, QMI8658WoMBlankingTime);
-    sleep_ms(10);
 
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL9, CTRL_CMD_WRITE_WOM_SETTING);
-
-    if (i2c_read_byte(I2C_PORT, QMI8568A_ADDR, STATUSINT) != STATUSINT_CMD_DONE)
-    {
-        printf("Error configuring WoM\n");
-        return -1;
-    }
-
-    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL9, CTRL_CMD_ACK);
-    printf("WoM configured and ACK wrote on CTRL9\n");
-
-    return 0;
-
-}
-
-
-void enable_motion_events(void)
+void enable_pedometer(void)
 {
+    // configurar el odr
+    uint8_t reg_value  = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL2);
+    i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL2, ODR_GYRO_56|reg_value|aFS_2g);
+    reg_value = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL2);
+    printf("ODR: 0x%02X\n", reg_value);
+
     // habilitar el acelerometro   
-    uint8_t reg_value = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL7);
+    reg_value = i2c_read_byte(I2C_PORT, QMI8568A_ADDR, CTRL7);
     i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL7, reg_value | CTRL7_ENABLE_ACC);
 
     // habilitar el pedometer
@@ -170,6 +140,7 @@ void enable_motion_events(void)
     i2c_write_byte(I2C_PORT, QMI8568A_ADDR, CTRL8, reg_value | PEDOMETER_EN);
 
 }
+
 
 
 void QMI8658_init (void)
@@ -193,31 +164,14 @@ void QMI8658_init (void)
     printf("Conection found with QMI8568\n");
     printf("QMI8658A sensor at: 0x%02X   WHO_AM_I: 0x%02X\n", QMI8568A_ADDR, QMI8568A_WHO_AM_I);
 
-    // desabilitar el CTRL7, necesario para ambas configuraciones
-    disable_ctrl7();
-
-    // Configurar ODR y full-scale del acelerometro
-    set_ODR();
 
     // habilitar las interrupciones en modo push pull
     config_interrupts();
-
-
-    // configurar los parametros del pedometer
-
     printf("Configuring pedometer parameters...\n");
     if (imu_config_pedometer_params() != 0) {return;}
     printf("Pedometer parameters configured\n");
 
-    // configurar los parametros del WoM
-    printf("Configuring WoM parameters...\n");
-    if (imu_config_WoM_params() != 0) {return;}
-    printf("WoM parameters configured\n");
-
-
     // habilitar el pedometer
-    enable_motion_events();
-
-    printf("motion events enable\n");
+    enable_pedometer();
+    printf("Pedometer enabled\n");
 }
-

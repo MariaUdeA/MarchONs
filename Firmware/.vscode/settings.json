@@ -39,7 +39,19 @@
     "files.associations": {
         "i2c_driver.h": "c",
         "spi_driver.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "ds1302.h": "c",
+        "datetime.h": "c",
+        "lvgl_lib.h": "c",
+        "lcd.h": "c",
+        "lvgl.h": "c",
+        "lvgl_private.h": "c",
+        "lib.h": "c",
+        "imu.h": "c",
+        "lv_examples.h": "c",
+        "lv_example_get_started.h": "c",
+        "lv_example_event.h": "c",
+        "lv_example_layout.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
