@@ -89,7 +89,14 @@ static void config_clocks (void) {
         
 }
 
-
+/**
+ * @brief Función de callback para la animación del indicador de latidos.
+ * 
+ * @param obj Objeto de LVGL.
+ * @param value Valor de la animación.
+ * 
+ * @return none
+ */
 static void heart_pulse_cb(void *obj, int32_t value) {
     lv_obj_set_style_radius(obj, value, 0);
     lv_obj_set_size(obj, value *2, value *2);
@@ -97,6 +104,16 @@ static void heart_pulse_cb(void *obj, int32_t value) {
 
 }
 
+
+/**
+ * @brief Función para crear el indicador de latidos.
+ * 
+ * Esta función crea el indicador de latidos, un círculo que se expande y contrae para simular un latido.
+ * 
+ * @param parent Objeto padre de LVGL, en este caso la pantalla principal.
+ * 
+ * @return none
+ */
 static void create_heart_pulse_indicator (lv_obj_t *parent) {
     heart_circle = lv_obj_create(parent);
     lv_obj_set_size(heart_circle, 10, 10);
@@ -124,34 +141,13 @@ static void create_heart_pulse_indicator (lv_obj_t *parent) {
 
 }
 
-void disp_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
-{
-    // Configurar la ventana de dibujo en la pantalla
-    LCD_1IN28_SetWindows(area->x1, area->y1, area->x2, area->y2);
-    
-    // Enviar datos utilizando DMA
-    dma_channel_configure(
-        dma_tx,
-        &c,
-        (volatile void *)&spi_get_hw(SPI_PORT)->dr, // Dirección destino: Registro SPI
-        color_p,                                    // Dirección fuente: Buffer de color
-        ((area->x2 + 1 - area-> x1)*(area->y2 + 1 - area -> y1))*2, // Cantidad de datos
-        true); // Iniciar transferencia automáticamente
-}
-
-static void dma_handler(void)
-{
-    uint32_t status = dma_channel_get_irq0_status(dma_tx);
-    printf("status: %08x\n", status);
-    if (status) {
-        dma_channel_acknowledge_irq0(dma_tx);
-        lv_disp_flush_ready(&disp_drv);         /* Indicate you are ready with the flushing*/
-        printf("DMA transfer complete\n");
-    } else {
-        printf("no DMA interrupot triggered. \n");
-    }
-}
-
+/**
+ * @brief Función para crear la pantalla principal.
+ * 
+ * Esta función crea la pantalla principal del smartwatch, con la hora, la fecha, la batería, los pasos, las calorías, los latidos y la distancia.
+ * 
+ * @return none
+ */
 static void create_main_screen (void) {
     
     screen_main = lv_obj_create(NULL);
@@ -164,14 +160,14 @@ static void create_main_screen (void) {
 
     // configuración del widget de fecha (debajo de la hora)
     label_date = lv_label_create(screen_main);
-    lv_label_set_text(label_date, "04.12 WED");
+    lv_label_set_text(label_date, "04/12/2024 WED");
     lv_obj_set_style_text_font(label_date, &lv_font_montserrat_18, 0);
     lv_obj_align(label_date, LV_ALIGN_CENTER, 0, -40);
 
 
     // indicador de bateria
     label_battery = lv_label_create(screen_main);
-    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%%");
+    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%");
     lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
 
 
@@ -221,6 +217,84 @@ static void create_main_screen (void) {
 }
 
 
+/**
+ * @brief Funcion que se utiliza para refrescar la pantalla
+ * 
+ * Refresca la pantalla transmitiendo los datos de color al display utilizando DMA.
+ * 
+ * @param disp Puntero a la estructura de la pantalla
+ * @param area Área de la pantalla que se va a refrescar
+ * @param color_p Puntero al buffer de color
+ * 
+ */
+void disp_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+    // Configurar la ventana de dibujo en la pantalla
+    LCD_1IN28_SetWindows(area->x1, area->y1, area->x2, area->y2);
+    
+    // Enviar datos utilizando DMA
+    dma_channel_configure(
+        dma_tx,
+        &c,
+        (volatile void *)&spi_get_hw(SPI_PORT)->dr, // Dirección destino: Registro SPI
+        color_p,                                    // Dirección fuente: Buffer de color
+        ((area->x2 + 1 - area-> x1)*(area->y2 + 1 - area -> y1))*2, // Cantidad de datos
+        true); // Iniciar transferencia automáticamente
+}
+
+
+/**
+ * @brief Función que indica que el refresco de la pantalla está listo
+ * 
+ * Esta función se llama cuando el refresco de la pantalla está listo.
+ * 
+ * @param none
+ * 
+ * @return none
+ */
+static void dma_handler(void)
+{
+    uint32_t status = dma_channel_get_irq0_status(dma_tx);
+    printf("status: %08x\n", status);
+    if (status) {
+        dma_channel_acknowledge_irq0(dma_tx);
+        lv_disp_flush_ready(&disp_drv);         /* Indicate you are ready with the flushing*/
+        printf("DMA transfer complete\n");
+    } else {
+        printf("no DMA interrupot triggered. \n");
+    }
+}
+
+
+/**
+ * @brief Funcion que inicializa la libreria de LVGL
+ * 
+ * Esta función inicializa la libreria de LVGL, crea un timer que se encarga de manejar los eventos de la interfaz grafica
+ * 
+ * @return none
+ */
+static void lvgl_init_library (void) {
+
+    add_repeating_timer_ms(5, repeating_lvgl_timer_callback, NULL, &lvgl_timer);
+
+    // Inicialización de LVGL
+    lv_init();
+
+    lv_disp_draw_buf_init(&disp_buf, buf0, buf1, DISP_HOR_RES * DISP_VER_RES / 2); 
+    lv_disp_drv_init(&disp_drv);    
+    disp_drv.flush_cb = disp_flush_cb;
+    disp_drv.draw_buf = &disp_buf;        
+    disp_drv.hor_res = DISP_HOR_RES;
+    disp_drv.ver_res = DISP_VER_RES;
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+
+    dma_channel_set_irq0_enabled(dma_tx, true);
+    irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+    irq_set_enabled(DMA_IRQ_0, true);
+}
+
+
+
 static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
    
     lv_tick_inc(5);
@@ -229,7 +303,10 @@ static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
 
 void update_main_screen(void) {
     // Actualizar hora y fecha
-    DS1302_read(&t); // Leer del RTC
+    //DS1302_read(&t); // Leer del RTC
+
+    // Actualizar hora y fecha con las funciones que hizo maria
+
 
     char time_str[8], date_str[16], steps_str[8], heart_str[16], distance_str[16], cal_str[16];
     snprintf(time_str, sizeof(time_str), "%02d:%02d", t.hour, t.min);
@@ -263,32 +340,14 @@ int smartwatch_init(void)
     stdio_init_all();
     sleep_ms(3000);
 
-    // Inicialización del hardware
+    // Inicialización del hardware del LCDm IMU y RTC
     LCD_init(HORIZONTAL);
     set_pwm(100);
     QMI8658_init();
     DS1302_init(&t);
 
     // Actualizacion de datos RTC, Hearbeats, Steps, Calories
-    update_main_screen();
-
-
-    add_repeating_timer_ms(5, repeating_lvgl_timer_callback, NULL, &lvgl_timer);
-
-    // Inicialización de LVGL
-    lv_init();
-
-    lv_disp_draw_buf_init(&disp_buf, buf0, buf1, DISP_HOR_RES * DISP_VER_RES / 2); 
-    lv_disp_drv_init(&disp_drv);    
-    disp_drv.flush_cb = disp_flush_cb;
-    disp_drv.draw_buf = &disp_buf;        
-    disp_drv.hor_res = DISP_HOR_RES;
-    disp_drv.ver_res = DISP_VER_RES;
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
-
-    dma_channel_set_irq0_enabled(dma_tx, true);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
+    // update_main_screen();
 
     // Crear las pantallas
     create_main_screen();
