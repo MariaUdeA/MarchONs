@@ -32,7 +32,15 @@ static lv_obj_t *label_time;
 static lv_obj_t *label_date;
 static lv_obj_t *label_battery;
 
-static lv_obj_t *bar_steps, *bar_calories, *bar_distance;
+static lv_obj_t *bar_steps;
+
+static lv_obj_t *arc_calories, *arc_distance;
+
+
+static lv_obj_t *heart_circle;
+static lv_obj_t *label_pulse;
+
+
 
 
 
@@ -73,6 +81,41 @@ static void config_clocks (void) {
         
 }
 
+
+static void heart_pulse_cb(void *obj, int32_t value) {
+    lv_obj_set_style_radius(obj, value, 0);
+    lv_obj_set_size(obj, value *2, value *2);
+    lv_obj_align(obj, LV_ALIGN_CENTER, 50, -10);
+
+}
+
+static void create_heart_pulse_indicator (lv_obj_t *parent) {
+    heart_circle = lv_obj_create(parent);
+    lv_obj_set_size(heart_circle, 10, 10);
+    lv_obj_set_style_radius(heart_circle, 5, 0);
+    lv_obj_set_style_bg_color(heart_circle, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_align(heart_circle, LV_ALIGN_CENTER, 50, -10);
+
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, heart_circle);
+    lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)heart_pulse_cb);
+    lv_anim_set_values(&a, 13, 17);
+    lv_anim_set_time(&a, 400);
+    lv_anim_set_playback_time(&a, 400);
+    lv_anim_set_playback_time(&a, 400);
+    lv_anim_set_repeat_delay(&a, 200);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&a);
+
+    label_pulse = lv_label_create(parent);
+    lv_label_set_text(label_pulse, "72 bpm");
+    lv_obj_set_style_text_font(label_pulse, &lv_font_montserrat_10, 0);
+    lv_obj_align_to(label_pulse, heart_circle, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+
+}
+
 void disp_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
     // Configurar la ventana de dibujo en la pantalla
@@ -107,43 +150,66 @@ static void create_main_screen (void) {
 
     // configuración del widget de hora
     label_time = lv_label_create(screen_main);
-    lv_label_set_text(label_time, "15:45");
+    lv_label_set_text(label_time, "16:28");
     lv_obj_set_style_text_font(label_time, &lv_font_montserrat_48, 0);
-    lv_obj_align(label_time, LV_ALIGN_CENTER, 0, -40);
+    lv_obj_align(label_time, LV_ALIGN_CENTER, 0, -70);
 
     // configuración del widget de fecha (debajo de la hora)
     label_date = lv_label_create(screen_main);
-    lv_label_set_text(label_date, "02.12 WED");
+    lv_label_set_text(label_date, "04.12 WED");
     lv_obj_set_style_text_font(label_date, &lv_font_montserrat_18, 0);
-    lv_obj_align(label_date, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(label_date, LV_ALIGN_CENTER, 0, -40);
 
 
     // indicador de bateria
     label_battery = lv_label_create(screen_main);
-    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%");
+    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_2 "50%");
     lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
 
 
     // barra progreso de los pasos 
     bar_steps = lv_bar_create(screen_main);
-    lv_obj_set_size(bar_steps, 200, 20);
+    lv_obj_set_size(bar_steps, 100, 20);
     lv_bar_set_range(bar_steps, 0, 8000);
-    lv_bar_set_value(bar_steps, 5600, LV_ANIM_OFF);
-    lv_obj_align(bar_steps, LV_ALIGN_CENTER, 0, 40);
+    lv_bar_set_value(bar_steps, 600, LV_ANIM_OFF);
+    lv_obj_align(bar_steps, LV_ALIGN_CENTER, -50, -10);
 
     lv_obj_t *label_steps = lv_label_create(screen_main);
-    lv_label_set_text(label_steps, "5600/8000 steps");
-    lv_obj_align_to(label_steps, bar_steps, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+    lv_label_set_text(label_steps, "600/8000 steps");
+    lv_obj_set_style_text_font(label_steps, &lv_font_montserrat_10, 0);
+    lv_obj_align_to(label_steps, bar_steps, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
 
     // barra progreso de las calorias y distancia 
+    arc_calories = lv_arc_create(screen_main);
+    lv_obj_set_size(arc_calories, 45, 45);
+    lv_arc_set_bg_angles(arc_calories, 0, 360);
+    lv_obj_remove_style(arc_calories, NULL, LV_PART_KNOB);
+    lv_arc_set_angles(arc_calories, 0, 0);
+    lv_arc_set_value(arc_calories, 50);
+    lv_obj_align(arc_calories, LV_ALIGN_CENTER, -40, 45);
+
     lv_obj_t *label_calories = lv_label_create(screen_main);
-    lv_label_set_text(label_calories, "418 Kcal");
-    lv_obj_align(label_calories, LV_ALIGN_TOP_LEFT, 20, -20);
+    lv_label_set_text(label_calories, "250/5000 \n     cal");
+    lv_obj_set_style_text_font(label_calories, &lv_font_montserrat_10, 0);
+    lv_obj_align_to(label_calories, arc_calories, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
 
 
-    lv_obj_t *label_distance = lv_bar_create(screen_main);
-    lv_label_set_text(label_distance, "3.5 Km");
-    lv_obj_align(label_distance, LV_ALIGN_TOP_RIGHT, -10, -10);
+    // arco distancia
+    arc_distance = lv_arc_create(screen_main);
+    lv_obj_set_size(arc_distance, 45, 45);
+    lv_arc_set_bg_angles(arc_distance, 0, 360);
+    lv_obj_remove_style(arc_distance, NULL, LV_PART_KNOB);
+    lv_arc_set_angles(arc_distance, 0, 0);
+    lv_arc_set_value(arc_distance, 50);
+    lv_obj_align(arc_distance, LV_ALIGN_CENTER, 40, 45);
+
+    lv_obj_t *label_distance = lv_label_create(screen_main);
+    lv_label_set_text(label_distance, "0.5/8 \n     Km");
+    lv_obj_set_style_text_font(label_distance, &lv_font_montserrat_10, 0);
+    lv_obj_align_to(label_distance, arc_distance, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+
+
+    create_heart_pulse_indicator(screen_main);
 }
 
 
@@ -192,9 +258,7 @@ int smartwatch_init(void)
 
     lv_scr_load(screen_main);
 
-    uint32_t steps = 0;
 
-    printf("DMA status: %08x\n", dma_channel_get_irq0_status(dma_tx));  
     // Bucle principal para LVGL
     while (true)
     {
