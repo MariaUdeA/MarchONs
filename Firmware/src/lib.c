@@ -31,6 +31,10 @@ static lv_obj_t *screen_main;
 static lv_obj_t *label_time;
 static lv_obj_t *label_date;
 static lv_obj_t *label_battery;
+static lv_obj_t *label_calories;
+static lv_obj_t *label_distance;
+static lv_obj_t *label_heart;
+static lv_obj_t *label_steps;
 
 static lv_obj_t *bar_steps;
 
@@ -52,6 +56,10 @@ static void dma_handler(void);
 static void timer_callback(lv_timer_t * timer);
 static void create_screen1 (void);
 static void create_screen2 (void);
+static void update_main_screen(void);
+uint32_t steps_count = 0;
+uint8_t heartbeat_avg,heartbeat = 0;
+char weekday_list [][3] = {"SUN","MON","TUE","WED","THU","FRI","SAT"};
 
 datetime_t t ={
     .year  = 1523,
@@ -163,7 +171,7 @@ static void create_main_screen (void) {
 
     // indicador de bateria
     label_battery = lv_label_create(screen_main);
-    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_2 "50%");
+    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%%");
     lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
 
 
@@ -219,9 +227,35 @@ static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
     return true;
 }
 
+void update_main_screen(void) {
+    // Actualizar hora y fecha
+    DS1302_read(&t); // Leer del RTC
+
+    char time_str[8], date_str[16], steps_str[8], heart_str[16], distance_str[16], cal_str[16];
+    snprintf(time_str, sizeof(time_str), "%02d:%02d", t.hour, t.min);
+    snprintf(date_str, sizeof(date_str), "%02d/%02d/%04d %s", t.day, t.month, t.year, weekday_list[t.dotw]); // Día como texto con anyo
+    lv_label_set_text(label_time, time_str);
+    lv_label_set_text(label_date, date_str);
+
+    // Actualizar barra de pasos
+    lv_bar_set_value(bar_steps, steps_count, LV_ANIM_OFF); // Unir steps count con el output de la IMU
+
+    // Actualizar valores de calorías, latidos y distancia (con datos simulados)
+    //leer steps
+    //leer bpm
+    snprintf(cal_str, sizeof(cal_str), "%d Kcal", (uint32_t)(((float)steps_count * 0.04f) + (0.063f * (float)heartbeat_avg)));
+    snprintf(distance_str, sizeof(distance_str), "%.1f Km", 0.75*steps_count/1000);
+    snprintf(heart_str, sizeof(heart_str), "%d BPM", heartbeat);
+    lv_label_set_text(label_calories, distance_str);
+    lv_label_set_text(label_distance, cal_str);
+    lv_label_set_text(label_heart, heart_str);
+
+}
 
 int smartwatch_init(void)
 {
+    
+    
     // Configuración de PLL y clocks
     config_clocks();
 
@@ -234,6 +268,9 @@ int smartwatch_init(void)
     set_pwm(100);
     QMI8658_init();
     DS1302_init(&t);
+
+    // Actualizacion de datos RTC, Hearbeats, Steps, Calories
+    update_main_screen();
 
 
     add_repeating_timer_ms(5, repeating_lvgl_timer_callback, NULL, &lvgl_timer);
