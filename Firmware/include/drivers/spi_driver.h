@@ -77,10 +77,16 @@
 /*! @brief Define if the spi0 port is LSB first*/
 #define SPI0_LSB_FIRST 1
 
+
+
+
 /**
  * @}
  */
 
+
+extern uint dma_tx;
+extern dma_channel_config c;
 /**
  * @addtogroup SPI_FUNCTIONS
  *

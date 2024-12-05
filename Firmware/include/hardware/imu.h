@@ -1,4 +1,3 @@
-
 /**
  * @file imu.h
  *
@@ -81,7 +80,7 @@
 #define PED_TIME_LOW        0x14
 /*! @brief Indica la cantidad mínima de pasos continuos para comenzar el conteo de pasos válidos. Si los pasos detectados de manera continua son inferiores
 a esta cantidad y se alcanza el tiempo límite, los pasos no serán tenidos en cuenta; de lo contrario, todos los pasos detectados serán contabilizados, y se comenzará a contar cada paso siguiente antes de que se alcance el tiempo límite. Esto es útil para filtrar los pasos falsos detectados por vibraciones no relacionadas con pasos. */
-#define PED_CNT_ENTRY  0x010
+#define PED_CNT_ENTRY  0x04
 /*! @brief Se recomienda un valor de 0 */
 #define PED_FIX_PRECISION   0x00
 /*! @brief La cantidad de pasos después de la cual se actualizan los registros de salida del podómetro */
