@@ -45,6 +45,10 @@
 /*! @brief Pin de INT2 de la imu*/
 #define DOF_INT2 24
 
+
+/*! @brief Pin de INT del sensor de pulso*/
+#define MAX_INT 5
+
 // espacio para las instrucciones de preprocesador del rtc
 
 

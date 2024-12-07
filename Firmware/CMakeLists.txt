@@ -38,8 +38,8 @@ add_executable(Firmware
     src/hardware/ds1302.c
     src/drivers/i2c_driver.c
     src/drivers/spi_driver.c
-    src/step_counter.c
-
+    src/hardware/max30102.c
+    src/pulse_read.c
 )
 
 pico_set_program_name(Firmware "Firmware")

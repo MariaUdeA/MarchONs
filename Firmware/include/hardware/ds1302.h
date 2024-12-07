@@ -241,6 +241,16 @@ bool DateIsValid(datetime_t* dt);
 void print_datetime(datetime_t* dt);
 
 /**
+ * @brief Función para calcular el día de la semana, según la fecha válida.
+ * 
+ * @param y año, funciona para valores mayores a 1752.
+ * @param m month entre 1 y 12.
+ * @param d día del mes entre 1 y 31.
+ * 
+ * @return día de la semana.
+ */
+uint8_t dayofweek(uint16_t y,uint8_t m,uint8_t d);
+/**
  * @}
  *
  */
