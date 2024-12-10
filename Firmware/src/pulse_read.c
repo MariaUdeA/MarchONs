@@ -23,7 +23,7 @@
 
 beat_detector_t detect={
     .sample_rate=50,
-    .window_size=150,
+    .window_size=200,
     .smoothing_window=15,
     .round=0,
     .peak_len=0

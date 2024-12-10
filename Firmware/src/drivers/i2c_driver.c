@@ -94,15 +94,6 @@ void gpio_callback(uint gpio, uint32_t events)
  * funciones para la configuración del sensor de pulso
  * ******************************************************************************************************************************************
 */
-void max_pin_setup(void) 
-{
-    // configurar los pines de interrupción
-    gpio_init(MAX_INT);
-    gpio_set_dir(MAX_INT, GPIO_IN);
-
-    // configurar la interrupción
-    // gpio_set_irq_enabled_with_callback(DOF_INT1, GPIO_IRQ_LEVEL_LOW, true, &gpio_callback);
-}
 
 /********************************************************************************************************************************************
  * 
@@ -122,7 +113,7 @@ void smartwatch_i2c_init(void)
 
     // Inicializar la IMU
     imu_pin_setup();
-    max_pin_setup();
+    //max_pin_setup();
 
 } 
 

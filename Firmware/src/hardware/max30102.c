@@ -22,6 +22,7 @@
 #include <string.h> 
 
 sense_struct_t FIFO;
+static bool read_ir;
 
 static inline void max_write_reg(uint8_t reg, uint8_t value){
     i2c_write_byte(I2C_PORT,MAX_ADDR,reg,value);
@@ -79,8 +80,36 @@ void pulse_enableSlots() {
     max_write_reg(MLED_MODE_CTRL1_REG,config);
 }
 
+void answer_maxIRQ(){
+    //printf("irq noticed \n");
+    read_ir=true;
+}
 
-void max_init() {
+void pulse_enableIRQ(){
+    // configurar los pines de interrupción
+    gpio_init(MAX_INT);
+    gpio_set_dir(MAX_INT, GPIO_IN);
+    //gpio_pull_up(MAX_INT);
+
+    //configurar la interrupción
+    gpio_set_irq_enabled_with_callback(MAX_INT, GPIO_IRQ_EDGE_FALL, true, &answer_maxIRQ);
+
+    //Hacer el enable en el MAX
+    max_write_reg(IRQ_EN1_REG,1<<6);
+    //clear any possible interrupt
+    uint8_t reg_INTR1 = max_read_reg(IRQ_STATUS1_REG); 
+
+}
+
+bool pulse_getIR_flag(){
+    return read_ir;
+}
+
+void pulse_setIR_flag(bool set){
+    read_ir=set;
+}
+
+void max_init(bool*read_ir_sent) {
     // Check that a MAX30105 is connected
     if (pulse_getPartId() != MAX_PART_ID) {
         printf("UH-oh MAX30102 not connected, cry a river :(\n");
@@ -102,6 +131,9 @@ void max_init() {
 
     pulse_enableSlots();
     //Clear FIFO yay
+    read_ir=false;
+    pulse_enableIRQ();
+
     pulse_resetFifo();
     if(max_read_reg(FIFO_RD_PTR_REG)==max_read_reg(FIFO_WR_PTR_REG)){
         printf("FIFO cleared, config done. \n");

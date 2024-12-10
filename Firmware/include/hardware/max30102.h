@@ -258,6 +258,9 @@ typedef struct Record
  * @}
  */
 
+bool pulse_getIR_flag();
+
+void pulse_setIR_flag(bool set);
 
 /**
  * @brief Función para inicializar el módulo MAX30102.
@@ -266,7 +269,7 @@ typedef struct Record
  * 
  * @return none.
  */
-void max_init();
+void max_init(bool* read_ir);
 
 /**
  * @brief Función que regresa la última medida leída de la FIFO.
