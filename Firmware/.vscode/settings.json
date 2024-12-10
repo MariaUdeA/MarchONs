@@ -42,7 +42,10 @@
         "spi_driver.h": "c",
         "stdio.h": "c",
         "max30102.h": "c",
-        "runtime.h": "c"
+        "runtime.h": "c",
+        "clocks.h": "c",
+        "usb.h": "c",
+        "address_mapped.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

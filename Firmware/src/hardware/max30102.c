@@ -97,8 +97,8 @@ void max_init() {
     pulse_SPO2_config();
 
     //setting LED current to the max
-    max_write_reg(LED1_PULSE_AMP_REG,0x1F);
-    max_write_reg(LED2_PULSE_AMP_REG,0X1F);
+    max_write_reg(LED1_PULSE_AMP_REG,MAX30102_LED_CURR_7_6MA);
+    max_write_reg(LED2_PULSE_AMP_REG,MAX30102_LED_CURR_7_6MA);
 
     pulse_enableSlots();
     //Clear FIFO yay

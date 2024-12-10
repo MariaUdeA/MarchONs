@@ -20,20 +20,6 @@
  */
 
 #include "../include/pulse_read.h"
-#define MAX_WINDOW 255
-
-
-typedef struct beat_detector
-{
-    uint16_t sample_rate; //100
-    uint8_t window_size; //10
-    uint8_t smoothing_window; //5
-    uint32_t sample[MAX_WINDOW];
-    uint32_t timestamps[MAX_WINDOW];
-    uint32_t filtered_samples[MAX_WINDOW+1];
-    uint8_t round;
-    uint8_t peak_len;
-} beat_detector_t;
 
 beat_detector_t detect={
     .sample_rate=50,

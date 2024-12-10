@@ -27,11 +27,48 @@
 #include "hardware/gpio.h"
 #include "./hardware/max30102.h"
 
-#define AVG_SIZE 4
+/**< Maximum data window*/
+#define MAX_WINDOW 255
+/**
+ * 
+ * @addtogroup beat_struct Beat Detector Structure
+ * @{
+ *
+ * Estructura del detector de pulso
+ */
+typedef struct beat_detector
+{
+    uint16_t sample_rate; //100
+    uint8_t window_size; //10
+    uint8_t smoothing_window; //5
+    uint32_t sample[MAX_WINDOW];
+    uint32_t timestamps[MAX_WINDOW];
+    uint32_t filtered_samples[MAX_WINDOW+1];
+    uint8_t round;
+    uint8_t peak_len;
+} beat_detector_t;
+/**
+ * @}
+ */
 
-
-void get_bpm(void);
+/**
+ * @brief Función para guardar un sample de IR.
+ * 
+ * Esta función guarda una sample de IR y la suaviza.
+ * @param sample sample de IR  a guardar.
+ * 
+ * @return None.
+ */
 void add_sample(uint32_t sample);
+
+/**
+ * @brief Función medir el pulso por minuto.
+ * 
+ * Esta función toma el banco, encuentra los picos y su distancia para encontrar
+ * el pulso por minuto.
+ * 
+ * @return beats per minute.
+ */
 uint8_t calculate_heart_rate();
 
 

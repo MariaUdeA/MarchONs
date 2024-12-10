@@ -45,7 +45,7 @@ int main()
     printf("Starting...\n");
 
     smartwatch_i2c_init();
-    max_init();
+    //max_init();
     /*
     LCD_init(HORIZONTAL);
     LCD_Clear(WHITE);
@@ -54,23 +54,22 @@ int main()
     set_pwm(100);
   
     QMI8658_init();
-    uint32_t steps = 0;
+    uint32_t steps = 0;*/
     //El tiempo solo se configura si no ha empezado aún, si está detenido, no reconfigura el tiempo.
-    DS1302_init(&t);
-    datetime_t now;*/
+    DS1302_init(&t,USB_CONFIG);
+    datetime_t now;
     uint32_t time=time_us_32();
     while (true)
     {
+        //add_sample(pulse_getIR());
 
-        /*GetDateTime(&now);
-        print_datetime(&now);*/
-        add_sample(pulse_getIR());
-
-        if ((time_us_32()-time) / 1000 > 2000){ //two seconds
+        if ((time_us_32()-time) / 1000 > 1000){ //two seconds
+            GetDateTime(&now);
+            print_datetime(&now);
             // Calculate the heart rate
-            uint8_t bpm= calculate_heart_rate();
+            /*uint8_t bpm= calculate_heart_rate();
             if (bpm != 255)
-                 printf("Heart Rate: %d \n",bpm);
+                 printf("Heart Rate: %d \n",bpm);*/
             
             time = time_us_32();
         }

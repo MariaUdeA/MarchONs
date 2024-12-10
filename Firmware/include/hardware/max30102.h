@@ -29,12 +29,15 @@
 #include "../../include/drivers/i2c_driver.h"
 
 /**< MAX30102 Interrupt Pin, Active Low!!*/
+/**< MAX30102 Address*/
 #define MAX_ADDR 0x57
-
+/**< MAX multi mode Bit Field*/
 #define MAX_MODE_MULTI 0x03
-#define MAX_FIFO_DEPTH 0x10
+/**< MAX part ID WHO AM I*/
 #define MAX_PART_ID 0x15
+/**< Maximum buffer length*/
 #define I2C_BUFFER_LENGTH 256
+
 /**
  * @addtogroup rtc_regs RTC_REGISTERS
  * @{
@@ -85,7 +88,15 @@ enum MAX_registers{
 
 };
 
-
+/**
+ * @}
+ * 
+ * @addtogroup SamplingRate Sampling Rates
+ * @{
+ *
+ * Enumeración de los Sampling rates con su campo de bits respectivo.
+ * 
+ */
 typedef enum SamplingRate {
     MAX_SR_50HZ      = 0x00,
 	MAX_SR_100HZ     = 0x01,
@@ -97,6 +108,15 @@ typedef enum SamplingRate {
 	MAX_SR_3200HZ    = 0x07
 } SamplingRate;
 
+/**
+ * @}
+ * 
+ * @addtogroup LEDPulseWidth LED Pulse Widths
+ * @{
+ *
+ * Enumeración de los Pulse Widths con su campo de bits respectivo.
+ * 
+ */
 typedef enum LEDPulseWidth {
     MAX_PW_70US_15BITS    = 0x00,
     MAX_PW_120US_16BITS    = 0x01,
@@ -104,6 +124,15 @@ typedef enum LEDPulseWidth {
     MAX_PW_410US_18BITS   = 0x03
 } LEDPulseWidth;
 
+/**
+ * @}
+ * 
+ * @addtogroup SampleAverage Sample Averages
+ * @{
+ *
+ * Enumeración de los Sample Averages de la FIFO con su campo de bits respectivo.
+ * 
+ */
 typedef enum SampleAverage {
     MAX_SA_1SAMPLE    = 0x00,
     MAX_SA_2SAMPLE,
@@ -113,6 +142,15 @@ typedef enum SampleAverage {
     MAX_SA_32SAMPLE,
 } SampleAverage;
 
+/**
+ * @}
+ * 
+ * @addtogroup ADC_RGE ADC Ranges
+ * @{
+ *
+ * Enumeración de los rangos del ADC con su campo de bits respectivo.
+ * 
+ */
 typedef enum ADC_RGE {
     MAX_ADC_RGE_2048    = 0x00,
     MAX_ADC_RGE_4096,
@@ -120,6 +158,15 @@ typedef enum ADC_RGE {
     MAX_ADC_RGE_16384
 } ADC_RGE;
 
+/**
+ * @}
+ * 
+ * @addtogroup LEDCurrent LED Currents
+ * @{
+ *
+ * Enumeración de algunas de las corrientes del LED con su campo de bits respectivo.
+ * 
+ */
 typedef enum LEDCurrent {
 	MAX30102_LED_CURR_0MA      = 0x00,
 	MAX30102_LED_CURR_4_4MA    = 0x10,
@@ -139,12 +186,30 @@ typedef enum LEDCurrent {
 	MAX30102_LED_CURR_50MA     = 0xf0
 } LEDCurrent;
 
+/**
+ * @}
+ * 
+ * @addtogroup SLOTS Slots
+ * @{
+ *
+ * Enumeración de los LEDs de los SLOTS con su campo de bits respectivo.
+ * 
+ */
 typedef enum SLOTS{
     SLOT_NONE=0,
     SLOT_RED_LED,
     SLOT_IR_LED,
 }LED_SLOTS;
 
+/**
+ * @}
+ * 
+ * @addtogroup SPO2_CONFIG Configuración SPO2
+ * @{
+ *
+ * Estructura del registro de configuración de SPO2.
+ * 
+ */
 typedef union SPO2_CONFIG{   
     uint8_t WORD;
     struct BITS_SPO2{
@@ -155,7 +220,15 @@ typedef union SPO2_CONFIG{
     } BITS;
 } SPO2_config_t;
 
-
+/**
+ * @}
+ * 
+ * @addtogroup FIFO_CONFIG Configuración FIFO
+ * @{
+ *
+ * Estructura del registro de configuración de la FIFO.
+ * 
+ */
 typedef union FIFO_CONFIG{   
     uint8_t WORD;
     struct BITS_FIFO{
@@ -165,7 +238,15 @@ typedef union FIFO_CONFIG{
     } BITS;
 } FIFO_config_t;
 
-
+/**
+ * @}
+ * 
+ * @addtogroup record Buffer circular
+ * @{
+ *
+ * Estructura del buffer circular de 4 posiciones.
+ * 
+ */
 typedef struct Record
 {
     uint32_t red[4];
@@ -173,9 +254,26 @@ typedef struct Record
     uint8_t head;
     uint8_t tail;
 } sense_struct_t; //This is our circular buffer of readings from the sensor
+/**
+ * @}
+ */
 
 
+/**
+ * @brief Función para inicializar el módulo MAX30102.
+ * 
+ * Esta función configura los modos de los LEDs, el SPO2, los SLOTS, la corriente de los leds y la FIFO.
+ * 
+ * @return none.
+ */
 void max_init();
+
+/**
+ * @brief Función que regresa la última medida leída de la FIFO.
+ *
+ * 
+ * @return medida del IR de 32 bits.
+ */
 uint32_t pulse_getIR(void);
 
 #endif

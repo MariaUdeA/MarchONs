@@ -33,6 +33,8 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include <string.h>
+
 #include "pico/util/datetime.h"
 
 #include "../../include/drivers/spi_driver.h"
@@ -41,6 +43,11 @@
 #define START_RTC 0
 /**< Stop RTC bool*/
 #define STOP_RTC 1
+/**< USB manual configuration Flag*/
+#define USB_CONFIG 1
+/**< No USB manual configuration Flag*/
+#define NO_USB_CONFIG 1
+/**< Read RTC flag*/
 #define READ_FLAG 1
 
 /**
@@ -134,9 +141,10 @@ void setReg(uint8_t regAddress, uint8_t regValue);
  * 
  * Esta función inicializa el modulo rtc.
  * @param backup_time Puntero a estructura de datetime en caso de que el valor del RTC sea incorrecto.
+ * @param config Booleano que decide si se configura el tiempo cuando se conecta por el USB serial o no.
  * 
  */
-void DS1302_init(datetime_t* backup_time);
+void DS1302_init(datetime_t* backup_time, bool config);
 
 /**
  * @brief Función para determinar si el RTC se puede escribir o no.

@@ -30,6 +30,40 @@ static inline uint8_t bcd_to_dec(uint8_t value){
     return ((value>>4)*10) + (value & 0xF);
 }
 
+static inline bool detect_usb_serial(){
+    stdio_usb_init();
+    bool value=stdio_usb_connected();
+    printf("USB connected %d\n",value); //if this is ever 0, cry because wtf
+    return value;
+}
+
+/*uint16_t read_input(){
+    uint16_t number = 0;      // Variable to store the resulting integer
+    uint16_t ch;              // Variable to store the character read by getchar()
+    bool sign = 1;        // To handle negative numbers
+
+    printf("Enter a number: ");
+    
+    // Read characters until a newline or EOF is encountered
+    while ((ch = getchar()) != '\n' && ch != EOF) {
+        // Handle negative numbers (We do not handle them :))
+        if (ch == '-') {
+            continue;    // Skip the '-' character
+        }
+        
+        // Check if the character is a valid digit
+        if (ch >= '0' && ch <= '9') {
+            number = number * 10 + (ch - '0');  // Convert char to int and build the number
+        } else {
+            continue;
+        }
+    }
+    
+    printf("Input: %d\n", number);
+    return number;
+
+}*/
+
 uint8_t getReg(uint8_t regAddress)
 {
     SPI0_beginTransmission(regAddress | READ_FLAG);
@@ -45,7 +79,7 @@ void setReg(uint8_t regAddress, uint8_t regValue)
     SPI0_endTransmission();
 }
 
-void DS1302_init(datetime_t* backup_time){
+void DS1302_init(datetime_t* backup_time, bool config){
     SPI0_init();
     if (GetIsWriteProtected()){ //esto debería ser un 80
         printf("RTC was write protected, enabling writing now\n");
@@ -60,6 +94,53 @@ void DS1302_init(datetime_t* backup_time){
     if (!IsDateTimeValid()) {
         printf("RTC lost confidence in the DateTime!\n");
         SetDateTime(backup_time);
+    }
+
+    if(detect_usb_serial() & config){
+        gpio_init(15);
+        gpio_set_dir(15,GPIO_OUT);
+
+        gpio_put(15,true);
+
+
+        datetime_t now;
+        GetDateTime(&now);
+        SetIsRunning(false);
+
+        printf("Serial detected!");
+        printf("Last Reading: \n");
+        print_datetime(&now);
+        printf("Setting Up!\n\n");
+
+        uint32_t reading = 0;
+        do{            
+            printf("Enter the year:\n");
+            do{scanf("%d",&reading); printf("%d",reading);}while(reading>9990);
+            now.year=(uint16_t)reading;
+
+            printf("Enter the month:\n");
+            do{scanf("%d",&reading);}while(reading>12);
+            now.month=(uint16_t)reading;
+
+            printf("Enter the day of the month:\n");
+            do{scanf("%d",&reading);}while(reading>31);
+            now.day=(uint16_t)reading;
+
+        }while(!DateIsValid(&now));
+
+        printf("Enter the hour (24 hour format):\n");
+        do{scanf("%d",&reading);}while(reading>23);
+        now.hour=(uint16_t)reading;
+
+        printf("Enter the minutes:\n");
+        do{scanf("%d",&reading);}while(reading>59);
+        now.min=(uint16_t)reading;
+
+        now.dotw=dayofweek(now.year,now.month,now.day);
+
+        SetDateTime(&now);
+        SetIsRunning(true);
+
     }
 }
 
@@ -171,20 +252,30 @@ bool DateIsValid(datetime_t* dt){
     {
     // days in a month tests
     if (dt->month == 2){
-        if (dt->day > 29) return false;
+        if (dt->day > 29){
+            printf("Invalid date!\n");
+            return false;
+        }
         else if (dt->day > 28) {
             // leap day
             // check year to make sure its a leap year
             if ((dt->year % 4) != 0) return false;
-            if ((dt->year % 100) == 0 && (dt->year % 400) != 0)  return false;
+            if ((dt->year % 100) == 0 && (dt->year % 400) != 0){
+                printf("Invalid date!\n");
+                return false;
+            }
         }
     }
     else if (dt->day == 31){
-        if ((((dt->month - 1) % 7) % 2) == 1) return false;
+        if ((((dt->month - 1) % 7) % 2) == 1){
+            printf("Invalid date!\n");
+            return false;
+        }
     }
     
     return true;
     }
+    printf("Invalid date!\n");
     return false;
 }
 
