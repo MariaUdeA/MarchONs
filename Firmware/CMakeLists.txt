@@ -51,6 +51,8 @@ add_executable(Firmware
     src/hardware/ds1302.c
     src/drivers/i2c_driver.c
     src/drivers/spi_driver.c
+    src/hardware/max30102.c
+    src/pulse_read.c
     src/lib.c
 )
 
