@@ -175,4 +175,3 @@ void QMI8658_init (void)
     enable_pedometer();
     printf("Pedometer enabled\n");
 }
-

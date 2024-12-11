@@ -28,6 +28,19 @@ project(Firmware C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# Archivos de cabecera
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/lvgl
+    ${CMAKE_CURRENT_SOURCE_DIR}/lvgl/src
+)
+
+# Archivos de código fuente
+set(LVGL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lvgl)
+file(GLOB_RECURSE LVGL_SOURCES ${LVGL_DIR}/src/*.c)
+
+
+add_library(lvgl STATIC ${LVGL_SOURCES})
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(Firmware 
@@ -40,6 +53,7 @@ add_executable(Firmware
     src/drivers/spi_driver.c
     src/hardware/max30102.c
     src/pulse_read.c
+    src/lib.c
 )
 
 pico_set_program_name(Firmware "Firmware")
@@ -54,6 +68,10 @@ target_include_directories(Firmware PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
+target_include_directories(lvgl PUBLIC
+  ${LVGL_DIR}
+)
+
 # Add any user requested libraries
 target_link_libraries(Firmware 
         pico_stdlib
@@ -64,7 +82,8 @@ target_link_libraries(Firmware
         hardware_pll
         hardware_clocks
         hardware_sync
-        hardware_dma  
+        hardware_dma
+        lvgl  
         )
         
 pico_add_extra_outputs(Firmware)

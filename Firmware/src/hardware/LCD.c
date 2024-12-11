@@ -388,18 +388,9 @@ void LCD_Clear(uint16_t color) {
 
     color = ((color << 8)& 0xFF00) | (color >> 8);
 
-    for (j = 0; j < 28800; j++) {
+    for (j = 0; j < LCD_WIDTH* LCD_HEIGHT; j++) {
         image[j] = color;
     }
-    color = BLUE;
-    color = ((color << 8)& 0xFF00) | (color >> 8);
-
-
-    for (j = 28800; j < 57600; j++)
-    {
-        image[j] = color;
-    }
-    
 
     LCD_1IN28_SetWindows(0, 0, LCD_WIDTH, LCD_HEIGHT);
     gpio_put(LCD_DC_PIN, 1);
