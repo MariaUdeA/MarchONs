@@ -51,6 +51,11 @@
 #define WOM_INT 0x04
 /*! @brief Mascara para la interrupcion por paso */
 #define STEP_INT 0x10
+/*! @brief Resolución horizontal del display */
+#define DISP_HOR_RES 240 
+/*! @brief Resolución vertical del display */
+#define DISP_VER_RES 240 
+
 
 typedef struct 
 {
@@ -60,18 +65,18 @@ typedef struct
 } flags_t;
 
 
+
+
 /**
- * @brief Callback de la interrupción del sensor IMU.
+ * @brief Función que actualiza la pantalla principal
  * 
- * Función que se llama cuando se detecta una interrupción en el sensor IMU.
- * 
- * @param gpio Pin de interrupción.
- * @param events Eventos de interrupción.
+ * En esta funcion se realiza el chequeo de las variables y banderas de software para actualizar la pantalla principal
  * 
  * @return none
  * 
-*/
-void gpio_callback(uint gpio, uint32_t events);
+ */
+void update_main_screen(void);
+
 
 /**
  * @brief Configura todo el sistema
