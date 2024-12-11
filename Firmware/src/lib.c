@@ -38,11 +38,10 @@ static lv_obj_t *label_calories;
 static lv_obj_t *label_distance;
 static lv_obj_t *label_heart;
 
-
 static lv_obj_t *bar_steps;
 
 
-static *arc_calories, arc_distance;
+static lv_obj_t *arc_calories, *arc_distance;
 
 static lv_obj_t *heart_circle;
 static lv_obj_t *label_pulse;
@@ -58,13 +57,13 @@ static void create_screen1 (void);
 static void create_screen2 (void);
 
 datetime_t t ={
-    .year  = 1523,
-    .month = 06, //june
-    .day   = 05,
-    .dotw  = 5, // 0 is Sunday, so 5 is Friday
-    .hour  = 15,
-    .min   = 45,
-    .sec   = 06
+    .year  = 2025,
+    .month = 1, //june
+    .day   = 1,
+    .dotw  = 3, // 0 is Sunday, so 5 is Friday
+    .hour  = 0,
+    .min   = 00,
+    .sec   = 00
 };
 
 
@@ -103,22 +102,50 @@ void disp_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 static void dma_handler(void)
 {
     uint32_t status = dma_channel_get_irq0_status(dma_tx);
-    printf("status: %08x\n", status);
+    //printf("status: %08x\n", status);
     if (status) {
         dma_channel_acknowledge_irq0(dma_tx);
         lv_disp_flush_ready(&disp_drv);         /* Indicate you are ready with the flushing*/
-        printf("DMA transfer complete\n");
+        //printf("DMA transfer complete\n");
     } else {
-        printf("no DMA interrupot triggered. \n");
+        //printf("no DMA interrupt triggered. \n");
     }
 }
 
+static void heart_pulse_cb(void *obj, int32_t value) {
+    lv_obj_set_style_radius(obj, value, 0);
+    lv_obj_set_size(obj, value *2, value *2);
+    lv_obj_align(obj, LV_ALIGN_CENTER, 50, -10);
+}
 
+static void create_heart_pulse_indicator (lv_obj_t *parent) {
+    heart_circle = lv_obj_create(parent);
+    lv_obj_set_size(heart_circle, 10, 10);
+    lv_obj_set_style_radius(heart_circle, 5, 0);
+    lv_obj_set_style_bg_color(heart_circle, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_align(heart_circle, LV_ALIGN_CENTER, 50, -10);
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, heart_circle);
+    lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)heart_pulse_cb);
+    lv_anim_set_values(&a, 13, 17);
+    lv_anim_set_time(&a, 400);
+    lv_anim_set_playback_time(&a, 400);
+    lv_anim_set_playback_time(&a, 400);
+    lv_anim_set_repeat_delay(&a, 200);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&a);
+
+    label_pulse = lv_label_create(parent);
+    lv_label_set_text(label_pulse, "70 bpm");
+    lv_obj_set_style_text_font(label_pulse, &lv_font_montserrat_10, 0);
+    lv_obj_align_to(label_pulse, heart_circle, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+}
 
 static void create_screen1 (void) {
     
     screen1 = lv_obj_create(NULL);
-
 
     // WIDGET DE LA HORA
     label_time = lv_label_create(screen1);
@@ -136,13 +163,12 @@ static void create_screen1 (void) {
     // WIDGET DE LA BATERIA
     label_battery = lv_label_create(screen1);
     lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL "100%");
-    lv_obj_align(label_battery, LV_ALIGN_OUT_TOP_RIGHT, -90, 7);
-
+    lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
 
     // BARRA DE PROGRESO DE LOS PASOS
     bar_steps = lv_bar_create(screen1);
     lv_obj_set_size(bar_steps, 100, 20);
-    lv_bar_set_range(bar_steps, 0, 50);
+    lv_bar_set_range(bar_steps, 0, 1000);
     lv_bar_set_value(bar_steps, 0, LV_ANIM_OFF);
     lv_obj_align(bar_steps, LV_ALIGN_CENTER, -50, -10);
 
@@ -155,9 +181,9 @@ static void create_screen1 (void) {
     // WIDGET DE LAS CALORIAS
     arc_calories = lv_arc_create(screen1);
     lv_obj_set_size(arc_calories, 45, 45);
+    lv_arc_set_rotation(arc_calories, 270);
     lv_arc_set_bg_angles(arc_calories, 0, 360);
     lv_obj_remove_style(arc_calories, NULL, LV_PART_KNOB);
-    lv_arc_set_angles(arc_calories, 0, 0);
     lv_arc_set_value(arc_calories, 0);
     lv_obj_align(arc_calories, LV_ALIGN_CENTER, -40, 45);
 
@@ -170,16 +196,19 @@ static void create_screen1 (void) {
     // WIDGET DE LA DISTANCIA
     arc_distance = lv_arc_create(screen1);
     lv_obj_set_size(arc_distance, 45, 45);
+    lv_arc_set_rotation(arc_distance, 270);
     lv_arc_set_bg_angles(arc_distance, 0, 360);
     lv_obj_remove_style(arc_distance, NULL, LV_PART_KNOB);
-    lv_arc_set_angles(arc_distance, 0, 0);
     lv_arc_set_value(arc_distance, 0);
     lv_obj_align(arc_distance, LV_ALIGN_CENTER, 40, 45);
 
     label_distance = lv_label_create(screen1);
-    lv_label_set_text(label_distance, "0");
+    lv_label_set_text(label_distance, "0m");
     lv_obj_set_style_text_font(label_distance, &lv_font_montserrat_10, 0);
     lv_obj_align_to(label_distance, arc_distance, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+
+    //Heart Pulse Indicator
+    create_heart_pulse_indicator(screen1);
 
 
 }
@@ -190,9 +219,7 @@ static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
     return true;
 }
 
-
-int smartwatch_init(void)
-{
+void smartwatch_init(){
     // Configuración de PLL y clocks
     config_clocks();
 
@@ -204,8 +231,7 @@ int smartwatch_init(void)
     LCD_init(HORIZONTAL);
     set_pwm(100);
     QMI8658_init();
-    DS1302_init(&t);
-
+    max_init();
 
     add_repeating_timer_ms(5, repeating_lvgl_timer_callback, NULL, &lvgl_timer);
 
@@ -227,27 +253,149 @@ int smartwatch_init(void)
     // Crear las pantallas
     create_screen1();
 
-    // Inicializar la primera pantalla
+    // Inicializar la pantalla
     lv_scr_load(screen1);
 
-    uint32_t steps = 0;
+    //inicilizar el reloj
+    DS1302_init(&t,NO_USB_CONFIG);
 
-    printf("DMA status: %08x\n", dma_channel_get_irq0_status(dma_tx));  
+    printf("DMA status: %08x\n", dma_channel_get_irq0_status(dma_tx));
+
+    //adc reading for battery
+    adc_init();
+    adc_gpio_init(29);
+    adc_select_input(3);
+}
+
+void update_steps(uint32_t*steps){
+    *steps = read_imu_step_count();
+    char steps_str[32];
+    snprintf(steps_str, 64, "Steps: %d", (*steps%1001)); //texto de abajo
+    //printf("udapted text: %s\n", steps_str);
+
+    lv_bar_set_value(bar_steps, *steps, LV_ANIM_OFF);
+
+    lv_label_set_text(label_steps, steps_str);
+    lv_obj_align_to(label_steps, bar_steps, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+
+}
+
+void update_time(datetime_t*now){
+    const char* dotw_lookup[] = {"SUN","MON","TUE","WED", "THU", "FRI","SUN"};
+    GetDateTime(now);
+
+    //hour and minutes section
+    char time_str[32];
+    snprintf(time_str, 64, "%.2d:%.2d",now->hour,now->min); //texto de abajo
+
+    lv_label_set_text(label_time, time_str);
+    lv_obj_align(label_time, LV_ALIGN_CENTER, 0, -70);
+
+    //date section
+    snprintf(time_str, 64,"%.2d/%.2d/%.4d %.3s",now->day,now->month,now->year,dotw_lookup[now->dotw]); //texto de abajo
+
+    // WIDGET DE LA FECHA (DEBAJO DE LA HORA)
+    lv_label_set_text(label_date, time_str);
+    lv_obj_align(label_date, LV_ALIGN_CENTER, 0, -40);
+}
+
+void update_distance(uint32_t steps){
+    uint32_t distance=steps*0.75;
+    uint8_t angle=(100*distance/750)%101; //15km is the top distance to show
+    printf("percent%d\n",angle);
+    
+    lv_arc_set_value(arc_distance, angle);
+    lv_obj_align(arc_distance, LV_ALIGN_CENTER, 40, 45);
+
+    //hour and minutes section
+    char dist_str[32];
+    snprintf(dist_str, 64, "%dm",distance); //texto de abajo
+
+    lv_label_set_text(label_distance,dist_str);
+    lv_obj_align_to(label_distance, arc_distance, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+}
+
+void update_battery(){
+    char symbol[8];
+
+    uint16_t voltage = 33*adc_read() / (1 << 12) * 2;
+    uint8_t percent=voltage*100/4;
+    
+    if(voltage>=40){
+        percent=100;
+        strcpy(symbol, LV_SYMBOL_BATTERY_FULL);
+    }else if(voltage>=37){
+        strcpy(symbol, LV_SYMBOL_BATTERY_3);
+    }else if(voltage>=35){
+        strcpy(symbol, LV_SYMBOL_BATTERY_2);
+    }else if(voltage>=30){
+        strcpy(symbol, LV_SYMBOL_BATTERY_1);
+    }else if(voltage>=25){
+        strcpy(symbol, LV_SYMBOL_BATTERY_EMPTY);
+    }
+
+    char per_str[4];
+    snprintf(per_str, 16, "%d%%",voltage); //texto de abajo
+    strcat(symbol, per_str);
+
+    lv_label_set_text(label_battery, symbol);
+    lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -90, 7);
+
+}
+
+void update_hr(uint8_t bpm){
+    char bpm_str[3];
+    snprintf(bpm_str, 64, "%d",bpm); //texto de abajo
+
+    lv_label_set_text(label_pulse, bpm_str);
+    lv_obj_align_to(label_pulse, heart_circle, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+}
+
+void update_calories(uint32_t steps,uint8_t bpm){
+    uint32_t cals=0.04*steps+0.063*bpm;
+    uint8_t cals_per=cals*100/50; //let's say that the max is 50 cals
+
+    char cals_str[3];
+    snprintf(cals_str, 64, "%dcals",cals); //texto de abajo
+
+    lv_arc_set_value(arc_calories, cals);
+    lv_obj_align(arc_calories, LV_ALIGN_CENTER, -40, 45);
+
+    lv_label_set_text(label_calories, cals_str);
+    lv_obj_align_to(label_calories, arc_calories, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+
+}
+
+int smartwatch_main(void){
+    smartwatch_init();
+
+    //inicialización de las variables de lectura de datos
+    uint32_t steps = 0;
+    uint8_t bpm=70;
+    datetime_t now;
+    uint64_t time=time_us_64();
+
     // Bucle principal para LVGL
     while (true)
     {
-        steps = read_imu_step_count();
-        char steps_str[32];
-        snprintf(steps_str, 64, "Steps: %d", steps);
-        printf("udapted text: %s\n", steps_str);
+        if(pulse_getIR_flag()){
+            add_sample(pulse_getIR());
+            pulse_setIR_flag(false);
+        }
+        if((time_us_64()-time)/1000>1500){
+            uint8_t bpm_read = calculate_heart_rate();
+            if(bpm_read!=255)bpm=bpm_read;
+            time=time_us_64();
+        }
 
-        lv_bar_set_value(bar_steps, steps, LV_ANIM_OFF);
-
-        lv_label_set_text(label_steps, steps_str);
-        lv_obj_align_to(label_steps, bar_steps, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
+        update_steps(&steps);
+        update_time(&now);
+        update_distance(steps);
+        update_battery();
+        update_hr(bpm);
+        //update_calories(steps,bpm);
         lv_obj_invalidate(screen1);
-
-        lv_task_handler(); 
+        lv_task_handler(); //esto tiene que suceder cada 5ms
         sleep_ms(5); // Ajustar al ciclo de tiempo necesario
     }
 

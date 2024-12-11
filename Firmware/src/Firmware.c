@@ -18,7 +18,7 @@
 
 int main()
 {
-    if (smartwatch_init() != 0) {return -1;} 
+    if (smartwatch_main() != 0) {return -1;} 
 
     // Bucle principal para LVGL
 

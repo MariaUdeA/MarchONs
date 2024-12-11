@@ -18,7 +18,7 @@ Adicionalmente, se le agregará un modulo para cargar la batería, con un contro
 
 Para la estructura principal del proyecto se basa en el flujo de programa de polling e interrupciones. Como no se tiene lo específico del funcionamiento de todos los módulos, este diagrama es tentativo.
 <div align='center'>
-<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de Bloques" width="350"/>
+<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de flujo" width="350"/>
 </div>
 En general, cuando se tiene alguna bandera, se mira qué la causa, ya sea un reinicio de la hora y usuario, cambio de pantalla, si se lee la variable que corresponde a la pantalla o si se cambia el número de pasos (debido a que se cuentan por día), no se necesita estar en la pantalla específica para que se haga el cambio.
 
@@ -57,7 +57,7 @@ En el momento de presentar este proyecto, se plantean las siguientes pruebas par
 Se espera terminar el proyecto en cuatro semanas siguiendo el cronograma:
 
 <div align='center'>
-<img src="./Recursos_adicionales/Cronograma.png" alt="Diagrama de Bloques" width="750"/>
+<img src="./Recursos_adicionales/Cronograma.png" alt="Cronograma" width="750"/>
 </div>
 
 ## Presupuesto

@@ -46,7 +46,7 @@
 /**< USB manual configuration Flag*/
 #define USB_CONFIG 1
 /**< No USB manual configuration Flag*/
-#define NO_USB_CONFIG 1
+#define NO_USB_CONFIG 0
 /**< Read RTC flag*/
 #define READ_FLAG 1
 

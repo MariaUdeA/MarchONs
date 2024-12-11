@@ -20,11 +20,17 @@
 #ifndef LIB_H
 #define LIB_H
 
+#include <stdio.h>
+
 // Librerias del SDK
 #include "hardware/gpio.h"
 #include "hardware/pll.h"
 #include "hardware/clocks.h"
 #include "hardware/sync.h"
+#include "hardware/i2c.h"
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
+
 
 // Librerias de la pico
 #include "pico/stdlib.h"
@@ -33,9 +39,11 @@
 // Librerias de la aplicacion
 #include "./hardware/LCD.h"
 #include "./hardware/imu.h"
+#include "./hardware/ds1302.h"
+#include "./hardware/max30102.h"
 #include "./drivers/spi_driver.h"
 #include "./drivers/i2c_driver.h"
-#include "./hardware/ds1302.h"
+#include "./pulse_read.h"
 
 
 //Libreria LGVL para el manejo de la interfaz grafica
@@ -65,8 +73,6 @@ typedef struct
 } flags_t;
 
 
-
-
 /**
  * @brief Función que actualiza la pantalla principal
  * 
@@ -86,7 +92,7 @@ void update_main_screen(void);
  * @return none
  * 
 */
-int smartwatch_init(void);
+int smartwatch_main(void);
 
 
 

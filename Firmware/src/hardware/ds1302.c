@@ -85,6 +85,7 @@ void DS1302_init(datetime_t* backup_time, bool config){
         printf("RTC was write protected, enabling writing now\n");
         SetIsWriteProtected(false);
     }
+    
     if (!GetIsRunning()){
         printf("RTC was not actively running, starting now\n");
         SetDateTime(backup_time);
@@ -94,15 +95,12 @@ void DS1302_init(datetime_t* backup_time, bool config){
     if (!IsDateTimeValid()) {
         printf("RTC lost confidence in the DateTime!\n");
         SetDateTime(backup_time);
+        datetime_t check;
+        GetDateTime(&check);
+        if(check.year==backup_time->year){printf("Set finished");}
     }
 
     if(detect_usb_serial() & config){
-        gpio_init(15);
-        gpio_set_dir(15,GPIO_OUT);
-
-        gpio_put(15,true);
-
-
         datetime_t now;
         GetDateTime(&now);
         SetIsRunning(false);

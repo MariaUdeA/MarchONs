@@ -83,6 +83,7 @@ target_link_libraries(Firmware
         hardware_clocks
         hardware_sync
         hardware_dma
+        hardware_adc
         lvgl  
         )
         

@@ -109,7 +109,7 @@ void pulse_setIR_flag(bool set){
     read_ir=set;
 }
 
-void max_init(bool*read_ir_sent) {
+void max_init() {
     // Check that a MAX30105 is connected
     if (pulse_getPartId() != MAX_PART_ID) {
         printf("UH-oh MAX30102 not connected, cry a river :(\n");

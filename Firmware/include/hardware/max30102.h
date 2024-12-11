@@ -269,7 +269,7 @@ void pulse_setIR_flag(bool set);
  * 
  * @return none.
  */
-void max_init(bool* read_ir);
+void max_init();
 
 /**
  * @brief Función que regresa la última medida leída de la FIFO.
