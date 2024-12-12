@@ -254,6 +254,7 @@ typedef struct Record
     uint8_t head;
     uint8_t tail;
 } sense_struct_t; //This is our circular buffer of readings from the sensor
+
 /**
  * @}
  */

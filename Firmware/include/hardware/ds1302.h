@@ -8,6 +8,12 @@
  * 
  * Mapeo de RAM 31X8:
  * - 0 -> Decimales más significativos del año.
+ * - 1 -> Peso de la persona
+ * - 2 -> Altura de la persona
+ * - 3 -> Edad de la persona
+ * - 4 -> Pasos Low lsB
+ * - 5 -> Pasos Middle
+ * - 6 -> Pasos High
  * 
  * Pinout:
  * - **RST -> CS**: GPIO17
@@ -139,7 +145,7 @@ void setReg(uint8_t regAddress, uint8_t regValue);
 /**
  * @brief Función para inicializar el modulo RTC.
  * 
- * Esta función inicializa el modulo rtc.
+ * Esta función inicializa el modulo rtc y configura el usuario.
  * @param backup_time Puntero a estructura de datetime en caso de que el valor del RTC sea incorrecto.
  * @param config Booleano que decide si se configura el tiempo cuando se conecta por el USB serial o no.
  * 
@@ -258,6 +264,14 @@ void print_datetime(datetime_t* dt);
  * @return día de la semana.
  */
 uint8_t dayofweek(uint16_t y,uint8_t m,uint8_t d);
+
+
+/**
+ * @brief Función para leer los pasos guardados en la RAM.
+ * 
+ * @return pasos guardados.
+ */
+uint32_t read_steps_rtc();
 /**
  * @}
  *

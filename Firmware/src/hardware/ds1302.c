@@ -81,15 +81,24 @@ void setReg(uint8_t regAddress, uint8_t regValue)
 
 void DS1302_init(datetime_t* backup_time, bool config){
     SPI0_init();
+    
     if (GetIsWriteProtected()){ //esto debería ser un 80
         printf("RTC was write protected, enabling writing now\n");
         SetIsWriteProtected(false);
+        
+        SetMemory(4,0);
+        SetMemory(5,0);
+        SetMemory(6,0);
     }
     
     if (!GetIsRunning()){
         printf("RTC was not actively running, starting now\n");
         SetDateTime(backup_time);
         SetIsRunning(true);
+
+        SetMemory(4,0);
+        SetMemory(5,0);
+        SetMemory(6,0);
     }
 
     if (!IsDateTimeValid()) {
@@ -97,17 +106,18 @@ void DS1302_init(datetime_t* backup_time, bool config){
         SetDateTime(backup_time);
         datetime_t check;
         GetDateTime(&check);
-        if(check.year==backup_time->year){printf("Set finished");}
     }
+    
+    //setting memory to default
+    SetMemory(1,60); //peso 60kg
+    SetMemory(2,170); //altura cm
+    SetMemory(3,50); // edad años
 
     if(detect_usb_serial() & config){
         datetime_t now;
-        GetDateTime(&now);
         SetIsRunning(false);
 
         printf("Serial detected!");
-        printf("Last Reading: \n");
-        print_datetime(&now);
         printf("Setting Up!\n\n");
 
         uint32_t reading = 0;
@@ -116,29 +126,45 @@ void DS1302_init(datetime_t* backup_time, bool config){
             do{scanf("%d",&reading); printf("%d",reading);}while(reading>9990);
             now.year=(uint16_t)reading;
 
-            printf("Enter the month:\n");
+            printf("\nEnter the month:\n");
             do{scanf("%d",&reading);}while(reading>12);
             now.month=(uint16_t)reading;
 
-            printf("Enter the day of the month:\n");
+            printf("\nEnter the day of the month:\n");
             do{scanf("%d",&reading);}while(reading>31);
             now.day=(uint16_t)reading;
 
         }while(!DateIsValid(&now));
 
-        printf("Enter the hour (24 hour format):\n");
+        printf("\nEnter the hour (24 hour format):\n");
         do{scanf("%d",&reading);}while(reading>23);
         now.hour=(uint16_t)reading;
 
-        printf("Enter the minutes:\n");
+        printf("\nEnter the minutes:\n");
         do{scanf("%d",&reading);}while(reading>59);
         now.min=(uint16_t)reading;
 
         now.dotw=dayofweek(now.year,now.month,now.day);
 
+        printf("Enter your weight in kgs:\n");
+        do{scanf("%d",&reading);}while(reading>255);
+        SetMemory(1,reading);
+
+        printf("Enter your height in cm:\n");
+        do{scanf("%d",&reading);}while(reading>255);
+        SetMemory(2,reading);
+        
+        printf("Enter your age in years:\n");
+        do{scanf("%d",&reading);}while(reading>120);
+        SetMemory(3,reading);
+        
+        //resetting steps
+        SetMemory(4,0);
+        SetMemory(5,0);
+        SetMemory(6,0);
+
         SetDateTime(&now);
         SetIsRunning(true);
-
     }
 }
 
@@ -182,8 +208,8 @@ void SetDateTime(datetime_t* dt){
     SPI0_WriteByte(dec_to_bcd(dt->sec % 60));
     SPI0_WriteByte(dec_to_bcd(dt->min % 60));
     SPI0_WriteByte(dec_to_bcd(dt->hour % 24)); // 24 hour mode only
-    SPI0_WriteByte(dec_to_bcd(dt->day % 31));
-    SPI0_WriteByte(dec_to_bcd(dt->month % 12));
+    SPI0_WriteByte(dec_to_bcd(dt->day % 32));
+    SPI0_WriteByte(dec_to_bcd(dt->month % 13));
     SPI0_WriteByte(dec_to_bcd(dt->dotw) % 7);
     SPI0_WriteByte(dec_to_bcd(dt->year % 100));
     SPI0_WriteByte(0); // no write protect, as all of this is ignored if it is protected
@@ -290,4 +316,11 @@ uint8_t dayofweek(uint16_t y,uint8_t m,uint8_t d){
     const uint8_t t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
     if (m<3) y -= 1;
     return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
+}
+
+uint32_t read_steps_rtc(){
+    uint8_t read_low = GetMemory(4);
+    uint8_t read_mid = GetMemory(5);
+    uint8_t read_high = GetMemory(6);   
+    return (read_high << 16) | (read_mid << 8) | read_low;
 }

@@ -48,6 +48,7 @@ static lv_obj_t *label_pulse;
 
 
 static struct repeating_timer lvgl_timer;
+static struct repeating_timer ms_timer;
 
 static void disp_flush_cb(lv_disp_drv_t * disp, const lv_area_t * area, lv_color_t * color_p);
 
@@ -61,10 +62,12 @@ datetime_t t ={
     .month = 1, //june
     .day   = 1,
     .dotw  = 3, // 0 is Sunday, so 5 is Friday
-    .hour  = 0,
-    .min   = 00,
+    .hour  = 23,
+    .min   = 59,
     .sec   = 00
 };
+
+timer_flags_t flags;
 
 
 /**
@@ -214,8 +217,21 @@ static void create_screen1 (void) {
 }
 
 static bool repeating_lvgl_timer_callback (struct repeating_timer *t) {
-   
     lv_tick_inc(5);
+    flags.five_mil=true;
+    return true;
+}
+
+static bool repeating_500ms_timer_callback(struct repeating_timer *t){
+    static uint8_t count;
+    static bool halfy;
+    count=(count+1)%3;
+    halfy=~halfy;
+
+    flags.half=1;
+    if (halfy) flags.full=1;
+    if (count==2) flags.one_half=1;
+
     return true;
 }
 
@@ -223,7 +239,7 @@ void smartwatch_init(){
     // Configuración de PLL y clocks
     config_clocks();
 
-    // Inicialización UART para debug
+    // Inicialización USB para debug
     stdio_init_all();
     sleep_ms(3000);
 
@@ -233,7 +249,14 @@ void smartwatch_init(){
     QMI8658_init();
     max_init();
 
+    //inicilizar el reloj
+    DS1302_init(&t,USB_CONFIG);
+
+
     add_repeating_timer_ms(5, repeating_lvgl_timer_callback, NULL, &lvgl_timer);
+
+    //let's see if this breaks everything! yay!
+    add_repeating_timer_ms(500, repeating_500ms_timer_callback, NULL, &ms_timer);
 
     // Inicialización de LVGL
     lv_init();
@@ -256,9 +279,6 @@ void smartwatch_init(){
     // Inicializar la pantalla
     lv_scr_load(screen1);
 
-    //inicilizar el reloj
-    DS1302_init(&t,NO_USB_CONFIG);
-
     printf("DMA status: %08x\n", dma_channel_get_irq0_status(dma_tx));
 
     //adc reading for battery
@@ -267,8 +287,35 @@ void smartwatch_init(){
     adc_select_input(3);
 }
 
-void update_steps(uint32_t*steps){
+void check_for_new_day(datetime_t*now){
+    datetime_t compare;
+    GetDateTime(&compare);
+    if (now->day != compare.day){
+        printf("%d vs %d",now->day,compare.day);
+        reset_imu();
+        QMI8658_init();
+        SetMemory(4,0);
+        SetMemory(5,0);
+        SetMemory(6,0);
+    }
+}
+
+void save_steps(uint32_t offset, uint32_t*steps){
+    *steps=offset+*steps;
+    
+    uint8_t step_low = *steps & 0xFF;
+    uint8_t step_mid = (*steps>>8) & 0xFF;
+    uint8_t step_high = (*steps>>16) &0XFF; 
+
+    //escritura en memoria
+    SetMemory(4,step_low);
+    SetMemory(5,step_mid);
+    SetMemory(6,step_high);  
+}
+
+void update_steps(uint32_t*steps,uint32_t offset){
     *steps = read_imu_step_count();
+    save_steps(offset,steps);
     char steps_str[32];
     snprintf(steps_str, 64, "Steps: %d", (*steps%1001)); //texto de abajo
     //printf("udapted text: %s\n", steps_str);
@@ -300,9 +347,9 @@ void update_time(datetime_t*now){
 }
 
 void update_distance(uint32_t steps){
-    uint32_t distance=steps*0.75;
-    uint8_t angle=(100*distance/750)%101; //15km is the top distance to show
-    printf("percent%d\n",angle);
+    uint8_t height=GetMemory(2);
+    uint32_t distance=steps*height*0.414/100; //size of step according to height in m
+    uint8_t angle=(100*distance/750)%101; //750m is the top distance to show
     
     lv_arc_set_value(arc_distance, angle);
     lv_obj_align(arc_distance, LV_ALIGN_CENTER, 40, 45);
@@ -352,13 +399,17 @@ void update_hr(uint8_t bpm){
 }
 
 void update_calories(uint32_t steps,uint8_t bpm){
-    uint32_t cals=0.04*steps+0.063*bpm;
-    uint8_t cals_per=cals*100/50; //let's say that the max is 50 cals
+    uint8_t weight=GetMemory(1);
+    uint8_t height=GetMemory(2);
+    uint8_t age=GetMemory(3);
+    uint32_t dist=steps*height*0.414/100; //size of step according to height in m
+    uint32_t cals=(dist/0.13)*(0.6309*bpm+0.1988*weight+0.2017*age-55.0969)/4.184;
+    uint8_t cals_per=cals*100/150000; //let's say that the max is 250 kcals
 
     char cals_str[3];
     snprintf(cals_str, 64, "%dcals",cals); //texto de abajo
 
-    lv_arc_set_value(arc_calories, cals);
+    lv_arc_set_value(arc_calories, cals_per);
     lv_obj_align(arc_calories, LV_ALIGN_CENTER, -40, 45);
 
     lv_label_set_text(label_calories, cals_str);
@@ -366,37 +417,61 @@ void update_calories(uint32_t steps,uint8_t bpm){
 
 }
 
+void end_screen(){
+    lv_obj_invalidate(screen1);
+    lv_task_handler(); //esto tiene que suceder cada 5ms
+}
+
 int smartwatch_main(void){
     smartwatch_init();
-
+    flags.half=0;
+    flags.full=0;
+    flags.one_half=0;
+    uint32_t offset=read_steps_rtc();
+    printf("Actual offset:%d\n",offset);
     //inicialización de las variables de lectura de datos
     uint32_t steps = 0;
     uint8_t bpm=70;
     datetime_t now;
-    uint64_t time=time_us_64();
+    GetDateTime(&now); //para evitar un bucle infinito
+    printf("Set day: %d\n",now.day);
 
     // Bucle principal para LVGL
     while (true)
     {
-        if(pulse_getIR_flag()){
-            add_sample(pulse_getIR());
-            pulse_setIR_flag(false);
+        if(flags.five_mil | flags.full | flags.half | flags.one_half | pulse_getIR_flag()){
+            if(pulse_getIR_flag()){
+                add_sample(pulse_getIR());
+                pulse_setIR_flag(false);
+            }
+            if(flags.half){
+                update_battery();
+                update_steps(&steps,offset);
+                update_distance(steps);
+                update_calories(steps,bpm);
+                end_screen();
+                flags.half=0;
+            }
+            if(flags.full){
+                update_time(&now);
+                end_screen();
+                flags.full=0;
+            }
+            if(flags.one_half){
+                uint8_t bpm_read = calculate_heart_rate();
+                if(bpm_read!=255)bpm=bpm_read;
+                update_hr(bpm);
+                end_screen();
+                flags.one_half=0;
+            }
+            if (flags.five_mil){  
+                check_for_new_day(&now);      
+                lv_obj_invalidate(screen1);
+                lv_task_handler(); //esto tiene que suceder cada 5ms
+                flags.five_mil=false;
+            }
         }
-        if((time_us_64()-time)/1000>1500){
-            uint8_t bpm_read = calculate_heart_rate();
-            if(bpm_read!=255)bpm=bpm_read;
-            time=time_us_64();
-        }
-
-        update_steps(&steps);
-        update_time(&now);
-        update_distance(steps);
-        update_battery();
-        update_hr(bpm);
-        //update_calories(steps,bpm);
-        lv_obj_invalidate(screen1);
-        lv_task_handler(); //esto tiene que suceder cada 5ms
-        sleep_ms(5); // Ajustar al ciclo de tiempo necesario
+        else{__wfi();}
     }
 
     return 0;

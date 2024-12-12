@@ -6,9 +6,7 @@ En este repositorio se planea poner la información y códigos correspondientes 
 
 Un reloj inteligente que permita tomar diferentes bio estadísticas, enfocadas al deporte y a la actividad física, mediante el uso de sensores.
 
-<div align='center'>
-<img src="./Recursos_adicionales/Diag_bloques.png" alt="Diagrama de Bloques" width="700"/>
-</div>
+\image html Diag_bloques.png width=700
 
 Se usará el micro-controlador RP2040 para procesar todas las señales. El sensor de acelerómetro y giroscopio se utiliza para medir los pasos por día viene conectado a un level shifter debido a que su voltaje típico de alimentación es de 1.8V y el RP2040 maneja una lógica de 3.3V. El sensor de ritmo cardíaco se usa para dar el pulso, conectado a I2C. La señal del RTC (*"Real"* time clock) externo para mostrar la hora en un momento dado y guardar datos es conectada mediante SPI.
 
@@ -18,9 +16,7 @@ Adicionalmente, se leerá la lectura del valor análogo de la batería mediante 
 
 Para la estructura principal del proyecto se basa en el flujo de programa de polling e interrupciones:
 
-<div align='center'>
-<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de flujo" width="400"/>
-</div>
+\image html Diag_flujo.png width=350
 
 
 
@@ -55,17 +51,17 @@ En el momento de presentar este proyecto, se plantean las siguientes pruebas par
 - Se apaga para ver si sigue el conteo de la fecha y hora de manera normal y si se guardan los pasos.
 - Se muestra el correcto funcionamiento de la carga de la batería, llegando hasta el límite, después, se deja encendido hasta que pasen 30 minutos.
 ## Cronograma
-Se espera terminar el proyecto en cuatro semanas siguiendo el cronograma:
+Se esperaba terminar el proyecto en cuatro semanas siguiendo el cronograma:
 
-<div align='center'>
-<img src="./Recursos_adicionales/Cronograma.png" alt="Cronograma" width="750"/>
-</div>
+\image html Cronograma.png width=70%
+
 Esto no fue cumplido debido a diferentes situaciones personales y dificultades encontradas en el desarrollo del proyecto, pero se espera que la fecha final de este sea el 13/12/2024.
 
 ## Presupuesto
 
 Se anexa en la siguiente tabla un presupuesto tentativo incluyendo los componentes principales para el funcionamiento del proyecto final, se tiene un valor comprensible para un grupo de tres personas.
 
+<div style="justify-self:center;">
 | Elemento                                                               | Valor (\$COP)   |
 |:----------------------------------------------------------------------:|:---------------:|
 | Placa MCU RP2040 con LCD redondo y sensor de acelerómetro y giroscopio | 93.415          |
@@ -74,3 +70,4 @@ Se anexa en la siguiente tabla un presupuesto tentativo incluyendo los component
 | Batería Litio-Polímero 3.7v 500mAh                                     | 16.800          |
 | Headers 1.27mm x4                                                      | 16.123          |
 | **Total**                                                              | 150.931         |
+</div>

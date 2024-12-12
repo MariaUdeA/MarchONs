@@ -72,6 +72,17 @@ typedef struct
 
 } flags_t;
 
+/**
+ * @brief Estructura para el manejo de las interrupciones.
+ * 
+ */
+typedef struct{
+    uint8_t five_mil :1;
+    uint8_t half     :1;
+    uint8_t full     :1;
+    uint8_t one_half :1;
+    uint8_t          :4;
+}timer_flags_t;
 
 /**
  * @brief Función que actualiza la pantalla principal
@@ -92,7 +103,38 @@ void update_main_screen(void);
  * @return none
  * 
 */
+void smartwatch_init(void);
+
+/**
+ * @brief Mira si es un nuevo día
+ * 
+ * Función que revisa si hay cambio de día. Si lo hay, reinicia la imu y la memoria del RTC.
+ * 
+ * @param now puntero a la estructura que guarda el tiempo actual.
+ * 
+*/
+void check_for_new_day(datetime_t*now);
+
+/**
+ * @brief Guarda los pasos en la memoria del RTC y actualiza el valor para ser mostrado en pantalla.
+ * 
+ * 
+ * @param offset Valor guardado de pasos en el RTC cuando se enciende el smartwatch.
+ * @param steps puntero al valor de los pasos de la IMU.
+ * 
+*/
+void save_steps(uint32_t offset, uint32_t*steps);
+
+/**
+ * @brief Función main del programa.
+ * 
+ * Función que inicializa y se queda en el loop del programa.
+ * 
+ * 
+*/
 int smartwatch_main(void);
+
+
 
 
 
