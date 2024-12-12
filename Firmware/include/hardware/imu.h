@@ -65,7 +65,7 @@
 /*! @brief Indica la cantidad de muestras por lote/ventana para el cálculo */
 #define PED_SAMPLE_CNT_H 0x00
 /*! @brief Indica el umbral para la detección válida de pico a pico */
-#define PED_FIX_PEAK2PEAK_L 0xD0
+#define PED_FIX_PEAK2PEAK_L 0xF3
 /*! @brief Indica el umbral para la detección válida de pico a pico */
 #define PED_FIX_PEAK2PEAK_H 0x00
 /*! @brief Indica el umbral para la detección de picos en comparación con el promedio */

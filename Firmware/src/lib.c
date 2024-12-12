@@ -363,10 +363,11 @@ void update_distance(uint32_t steps){
 }
 
 void update_battery(){
-    char symbol[8];
+    char symbol[12];
 
     uint16_t voltage = 33*adc_read() / (1 << 12) * 2;
-    uint8_t percent=voltage*100/4;
+    uint16_t percent=100*(voltage - 30) / (40 - 30);
+    //printf("v:%d,p:%d\n",voltage,percent);
     
     if(voltage>=40){
         percent=100;
@@ -381,8 +382,8 @@ void update_battery(){
         strcpy(symbol, LV_SYMBOL_BATTERY_EMPTY);
     }
 
-    char per_str[4];
-    snprintf(per_str, 16, "%d%%",voltage); //texto de abajo
+    char per_str[10];
+    snprintf(per_str, 16, "%d%%",percent); //texto de abajo
     strcat(symbol, per_str);
 
     lv_label_set_text(label_battery, symbol);
@@ -441,18 +442,20 @@ int smartwatch_main(void){
     {
         if(flags.five_mil | flags.full | flags.half | flags.one_half | pulse_getIR_flag()){
             if(pulse_getIR_flag()){
+
                 add_sample(pulse_getIR());
                 pulse_setIR_flag(false);
             }
             if(flags.half){
-                update_battery();
                 update_steps(&steps,offset);
+                update_battery();
                 update_distance(steps);
                 update_calories(steps,bpm);
                 end_screen();
                 flags.half=0;
             }
             if(flags.full){
+
                 update_time(&now);
                 end_screen();
                 flags.full=0;
