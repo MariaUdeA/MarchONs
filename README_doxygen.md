@@ -16,7 +16,7 @@ Adicionalmente, se leerá la lectura del valor análogo de la batería mediante 
 
 Para la estructura principal del proyecto se basa en el flujo de programa de polling e interrupciones:
 
-\image html Diag_flujo.png width=350
+\image html Diag_flujo.png width=500
 
 
 

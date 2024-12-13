@@ -19,7 +19,7 @@ Adicionalmente, se leerá la lectura del valor análogo de la batería mediante 
 Para la estructura principal del proyecto se basa en el flujo de programa de polling e interrupciones:
 
 <div align='center'>
-<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de flujo" width="400"/>
+<img src="./Recursos_adicionales/Diag_flujo.png" alt="Diagrama de flujo" width="600"/>
 </div>
 
 
@@ -74,3 +74,11 @@ Se anexa en la siguiente tabla un presupuesto tentativo incluyendo los component
 | Batería Litio-Polímero 3.7v 500mAh                                     | 16.800          |
 | Headers 1.27mm x4                                                      | 16.123          |
 | **Total**                                                              | 150.931         |
+
+
+## Generación de documentación
+En la carpeta raíz del proyecto se corre el siguiente comando en el terminal:
+```
+doxygen
+```
+Esto genera la documentación en la carpeta de Firmware, se abre el documento principal `index.html` en la carpeta `html`.
